@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Skull King — Journal de bord</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Cormorant+SC:wght@600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --abyss:#071722; --deep:#0D2333; --panel:#112C3E;
+  --brine:#1E4B5C; --brine-lite:#2A6377;
+  --foam:#E9F2F4; --mist:#89A6B2; --mist-dim:#5C7C89;
+  --brass:#D9A23F; --brass-hi:#F0BB58; --brass-dim:#7A5A20;
+  --sea:#4FC3A6; --blood:#D45B44;
+  --r:10px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:radial-gradient(120% 55% at 50% -8%, #10344a 0%, transparent 62%), var(--abyss);
+  color:var(--foam); font-family:Archivo,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.45; min-height:100vh;
+}
+.num{font-family:"Space Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.display{font-family:"Cormorant SC",Georgia,serif;letter-spacing:.06em}
+.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mist-dim);font-weight:600}
+h1,h2,h3{margin:0;font-weight:600}
+button{font-family:inherit;font-size:15px;color:inherit;background:none;border:none;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+/* ---------- barre supérieure permanente ---------- */
+.topbar{
+  position:sticky;top:0;z-index:40;background:rgba(7,23,34,.94);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--brine);
+  padding-top:env(safe-area-inset-top);
+}
+.tb-main{max-width:620px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:9px 12px}
+.tb-btn{
+  flex:0 0 auto;height:38px;min-width:38px;padding:0 11px;border-radius:9px;
+  border:1px solid var(--brine-lite);color:var(--mist);font-size:13px;font-weight:600;
+  display:flex;align-items:center;gap:6px;
+}
+.tb-btn.acc{border-color:var(--brass-dim);color:var(--brass)}
+.tb-title{flex:1;min-width:0;text-align:center}
+.tb-title .t1{font-family:"Cormorant SC",serif;font-size:17px;letter-spacing:.09em;color:var(--brass);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-title .t2{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mist-dim)}
+.tb-rank{max-width:620px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding:0 12px 9px;scrollbar-width:none}
+.tb-rank::-webkit-scrollbar{display:none}
+.tb-pill{
+  flex:0 0 auto;display:flex;align-items:baseline;gap:6px;padding:5px 9px;border-radius:20px;
+  background:var(--deep);border:1px solid var(--brine);font-size:12px;
+}
+.tb-pill.lead{border-color:var(--brass);background:rgba(217,162,63,.12)}
+.tb-pill b{font-family:"Space Mono",monospace;font-size:12px;font-weight:700}
+
+#app{max-width:620px;margin:0 auto;padding:14px 14px 130px}
+
+/* ---------- blocs ---------- */
+.card{background:var(--deep);border:1px solid var(--brine);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.card>.eyebrow{margin-bottom:10px}
+.hint{font-size:13px;color:var(--mist);line-height:1.42}
+.hint strong{color:var(--foam);font-weight:600}
+.rule{height:1px;background:linear-gradient(90deg,transparent,var(--brine),transparent);margin:16px 0}
+
+/* ---------- boutons ---------- */
+.btn{display:block;width:100%;padding:15px;border-radius:var(--r);background:var(--brass);
+  color:#14202b;font-weight:700;letter-spacing:.03em;border:1px solid var(--brass-hi)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{background:var(--brine);color:var(--mist-dim);border-color:var(--brine);cursor:not-allowed}
+.btn-ghost{display:block;width:100%;padding:13px;border-radius:var(--r);background:transparent;
+  border:1px solid var(--brine-lite);color:var(--mist);font-weight:600}
+.btn-danger{border-color:rgba(212,91,68,.5);color:#e08a78}
+.btn-row{display:flex;gap:8px}.btn-row>*{flex:1}
+
+input[type=text]{width:100%;padding:11px 12px;border-radius:8px;background:var(--abyss);
+  border:1px solid var(--brine);color:var(--foam);font-family:inherit;font-size:16px}
+select{width:100%;padding:11px 12px;border-radius:8px;background:var(--abyss);
+  border:1px solid var(--brine);color:var(--foam);font-family:inherit;font-size:15px}
+textarea{width:100%;min-height:150px;padding:11px;border-radius:8px;background:var(--abyss);
+  border:1px solid var(--brine);color:var(--foam);font-family:"Space Mono",monospace;font-size:12px;resize:vertical}
+
+/* ---------- pastilles ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{min-width:40px;height:40px;padding:0 10px;border-radius:8px;border:1px solid var(--brine);
+  background:var(--panel);font-family:"Space Mono",monospace;font-size:15px;color:var(--mist);
+  display:flex;align-items:center;justify-content:center}
+.chip[aria-pressed=true]{background:var(--brass);border-color:var(--brass-hi);color:#14202b;font-weight:700}
+.chip.sm{min-width:34px;height:34px;font-size:13px}
+.chip.wide{flex:1}
+
+.toggle{display:flex;align-items:flex-start;gap:11px;padding:9px 0;cursor:pointer}
+.toggle+.toggle{border-top:1px solid rgba(30,75,92,.5)}
+.switch{flex:0 0 44px;height:26px;border-radius:13px;background:var(--brine);
+  border:1px solid var(--brine-lite);position:relative;transition:background .15s;margin-top:2px}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;
+  background:var(--mist);transition:transform .15s,background .15s}
+.toggle[aria-checked=true] .switch{background:var(--brass-dim);border-color:var(--brass)}
+.toggle[aria-checked=true] .switch::after{transform:translateX(18px);background:var(--brass)}
+.toggle .tl{font-size:15px;font-weight:600}
+.toggle .td{font-size:12.5px;color:var(--mist);line-height:1.35}
+
+.prow{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.prow .idx{font-family:"Space Mono",monospace;font-size:12px;color:var(--mist-dim);width:18px;flex:0 0 18px}
+.prow .del{flex:0 0 40px;height:40px;border-radius:8px;border:1px solid var(--brine);color:var(--mist-dim);font-size:19px;line-height:1}
+
+/* ---------- manche ---------- */
+.steps{display:flex;gap:6px;margin-bottom:14px}
+.step{flex:1;text-align:center;padding:9px 4px;border-radius:8px;font-size:11.5px;
+  letter-spacing:.09em;text-transform:uppercase;font-weight:600;
+  border:1px solid var(--brine);color:var(--mist-dim);background:var(--deep)}
+.step[aria-current=true]{background:var(--brine);color:var(--foam);border-color:var(--brine-lite)}
+.step.done{color:var(--sea);border-color:rgba(79,195,166,.4)}
+
+.pblock{background:var(--deep);border:1px solid var(--brine);border-radius:var(--r);padding:12px;margin-bottom:10px}
+.pblock.hot{border-color:var(--brass-dim)}
+.pblock .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;gap:10px}
+.pblock .pn{font-family:"Cormorant SC",serif;font-size:19px;letter-spacing:.05em}
+.pblock .pt{font-family:"Space Mono",monospace;font-size:12.5px;color:var(--mist-dim);text-align:right}
+.tally{font-family:"Space Mono",monospace;font-size:13px;color:var(--brass)}
+.bonusline{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0}
+.bonusline+.bonusline{border-top:1px solid rgba(30,75,92,.45)}
+.bonusline .bl{font-size:13.5px;line-height:1.22}
+.bonusline .bv{font-family:"Space Mono",monospace;font-size:10.5px;color:var(--mist-dim);display:block}
+.disclose{width:100%;text-align:left;padding:9px 0;font-size:13px;color:var(--mist);
+  border-top:1px solid rgba(30,75,92,.45);margin-top:8px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+
+.warn{padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.4;margin-bottom:10px;
+  background:rgba(212,91,68,.12);border:1px solid rgba(212,91,68,.45);color:#f3b3a5}
+.warn.ok{background:rgba(79,195,166,.1);border-color:rgba(79,195,166,.4);color:#a8e6d5}
+.warn.note{background:rgba(217,162,63,.1);border-color:rgba(217,162,63,.4);color:#edcb8a}
+
+/* ---------- tableaux ---------- */
+.recap{width:100%;border-collapse:collapse;font-family:"Space Mono",monospace;font-size:13px}
+.recap th{font-family:Archivo,sans-serif;font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--mist-dim);font-weight:600;text-align:right;padding:0 0 8px}
+.recap th:first-child{text-align:left}
+.recap td{padding:7px 0;border-top:1px solid rgba(30,75,92,.5);text-align:right}
+.recap td:first-child{text-align:left;font-family:"Cormorant SC",serif;font-size:16px;letter-spacing:.04em}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pos{color:var(--sea)}.neg{color:var(--blood)}
+tr.editable{cursor:pointer}
+tr.editable:active td{background:rgba(217,162,63,.08)}
+
+/* ---------- signature : ligne de flottaison ---------- */
+.wl-mark{display:flex;align-items:center;gap:10px;margin:12px 0;
+  font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--brine-lite)}
+.wl-mark::before,.wl-mark::after{content:"";flex:1;height:1px;
+  background:repeating-linear-gradient(90deg,var(--brine-lite) 0 6px,transparent 6px 12px)}
+.frow{display:flex;align-items:center;gap:11px;padding:11px 12px;margin-bottom:6px;
+  border-radius:var(--r);border:1px solid var(--brine);background:var(--deep)}
+.frow .rk{font-family:"Space Mono",monospace;font-size:12px;color:var(--mist-dim);width:20px;flex:0 0 20px}
+.frow .nm{flex:1;font-family:"Cormorant SC",serif;font-size:19px;letter-spacing:.05em;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow .dl{font-family:"Space Mono",monospace;font-size:11px;color:var(--mist-dim)}
+.frow .sc{font-family:"Space Mono",monospace;font-size:21px;font-weight:700}
+.frow.lead{border-color:var(--brass);background:linear-gradient(90deg,rgba(217,162,63,.14),transparent 70%)}
+.frow.lead .rk{color:var(--brass)}
+.frow.sunk{background:linear-gradient(180deg,rgba(11,44,64,.9),rgba(7,23,34,.9));border-color:rgba(30,75,92,.6)}
+.frow.sunk .nm{color:var(--mist-dim);font-style:italic}
+.frow.sunk .sc{color:var(--blood)}
+.bubbles{font-size:11px;color:var(--brine-lite);letter-spacing:2px}
+
+/* ---------- barre d'action ---------- */
+.fab{position:fixed;left:0;right:0;bottom:0;z-index:30;
+  padding:14px 14px calc(14px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,transparent,var(--abyss) 36%)}
+.fab .inner{max-width:620px;margin:0 auto}
+
+/* ---------- modale ---------- */
+.scrim{position:fixed;inset:0;z-index:60;background:rgba(4,12,18,.78);
+  display:flex;align-items:center;justify-content:center;padding:18px}
+.modal{width:100%;max-width:420px;background:var(--deep);border:1px solid var(--brine-lite);
+  border-radius:14px;padding:18px;max-height:86vh;overflow:auto}
+.modal h3{font-family:"Cormorant SC",serif;font-size:21px;letter-spacing:.06em;color:var(--brass);margin-bottom:8px}
+.modal .body{font-size:14px;color:var(--mist);line-height:1.5;margin-bottom:16px}
+.modal .body strong{color:var(--foam)}
+.modal ul{margin:8px 0 0;padding-left:18px}
+.modal li{margin-bottom:5px}
+
+/* ---------- graphique ---------- */
+.chart{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:10px}
+.legend span{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--mist)}
+.dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px}
+.stat{background:var(--panel);border:1px solid var(--brine);border-radius:9px;padding:11px}
+.stat .sl{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--mist-dim);font-weight:600}
+.stat .sv{font-family:"Cormorant SC",serif;font-size:19px;letter-spacing:.04em;margin-top:3px}
+.stat .ss{font-family:"Space Mono",monospace;font-size:12px;color:var(--brass)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="tb-main" id="tb"></div><div class="tb-rank" id="tbr"></div></div>
+<div id="app"></div>
+<div class="fab"><div class="inner" id="fab"></div></div>
+<div id="modal"></div>
+
+<script>
+"use strict";
+
+/* ═══════════ RÈGLES (édition Blackrock 2022) ═══════════ */
+const DECK_BASE = 70, DECK_EXT = 74, MAX_PLAYERS = 10;
+
+const PRESETS = {
+  classique:  {label:"Classique — 1 à 10 cartes",       gen:()=>[1,2,3,4,5,6,7,8,9,10]},
+  pair:       {label:"Pas d'impair — 2·4·6·8·10",       gen:()=>[2,4,6,8,10]},
+  combat:     {label:"Prêt au combat — 6·7·8·9·10",     gen:()=>[6,7,8,9,10]},
+  eclair:     {label:"Attaque éclair — 5 × 5 cartes",   gen:()=>[5,5,5,5,5]},
+  barrage:    {label:"Tir de barrage — 10 × 10 cartes", gen:()=>Array(10).fill(10)},
+  tourbillon: {label:"Tourbillon — 9·7·5·3·1",          gen:()=>[9,7,5,3,1]},
+  dodo:       {label:"L'heure du dodo — 1 manche",      gen:()=>[1]}
+};
+
+const COLORS = ["#D9A23F","#4FC3A6","#D45B44","#6FA8DC","#C58FD9",
+                "#E0855A","#8FD46F","#D96FA8","#5FD1D9","#B9C34F"];
+
+/* ═══════════ ÉTAT ═══════════ */
+let S = null;                 // partie en cours
+let archives = [];            // parties terminées
+let view = "setup";           // setup | play | board | menu | archive
+let gameOver = false;
+let modal = null;             // {kind, ...}
+let scrollTop = true;
+
+const K_GAME = "skullking:partie", K_ARCH = "skullking:archives";
+
+const blankEntry = () => ({bid:null,won:null,c14:0,n14:false,mer:0,pir:0,sk:0,cannon:false,flam:0,open:false});
+const newDraft = () => ({entries:S.players.map(blankEntry), alliances:[]});
+
+const deckSize   = () => (S.extensions ? DECK_EXT : DECK_BASE);
+const maxCards   = () => Math.max(1, Math.floor(deckSize() / S.players.length));
+const roundIndex = () => (S.editing !== null ? S.editing : S.current);
+const cardsOf    = i => Math.min(S.schedule[i], maxCards());
+const cardsNow   = () => cardsOf(roundIndex());
+
+/* ═══════════ MOTEUR DE SCORE ═══════════ */
+const bonusRaw = e => e.c14*10 + (e.n14?20:0) + e.mer*20 + e.pir*30 + e.sk*40;
+
+function scoreEntry(e, cards, allies){
+  const bid = e.bid ?? 0, won = e.won ?? 0;
+  const diff = Math.abs(bid-won), exact = diff===0;
+  const bonusTotal = bonusRaw(e) + 20*allies;
+  const flam = S.flambeur && e.flam ? (exact ? e.flam : -e.flam) : 0;
+
+  if (S.system === "sk"){
+    const base = bid===0 ? (exact ? 10*cards : -10*cards)
+                         : (exact ? 20*bid   : -10*diff);
+    const bonus = (S.bonusIfExact && !exact) ? 0 : bonusTotal;
+    return {base, bonus, flam, total:base+bonus+flam, exact, diff};
+  }
+  const per = e.cannon ? 15 : 10;
+  const mult = exact ? 1 : (diff===1 ? (e.cannon?0:0.5) : 0);
+  const base  = Math.round(per*cards*mult);
+  const bonus = Math.round(bonusTotal*mult);
+  return {base, bonus, flam, total:base+bonus+flam, exact, diff};
+}
+
+function allianceCount(d, i){
+  let n=0;
+  for (const [a,b] of d.alliances){
+    if (a!==i && b!==i) continue;
+    const o = a===i ? b : a;
+    const me=d.entries[i], him=d.entries[o];
+    if (me.bid!==null && me.bid===me.won && him.bid!==null && him.bid===him.won) n++;
+  }
+  return n;
+}
+const scoreDraft = (d, cards) => d.entries.map((e,i)=>scoreEntry(e, cards, allianceCount(d,i)));
+
+function totals(upto){
+  const lim = upto===undefined ? S.rounds.length : upto;
+  const t = S.players.map(()=>0);
+  for (let k=0;k<lim;k++) S.rounds[k].scores.forEach((v,i)=>t[i]+=v);
+  return t;
+}
+function recomputeAll(){
+  S.rounds.forEach((r,k)=>{ r.scores = scoreDraft(r, cardsOf(k)).map(x=>x.total); });
+}
+
+/* ═══════════ STOCKAGE ═══════════ */
+const hasStore = () => !!(window.storage && window.storage.set);
+async function save(){ try{ if(hasStore()) await window.storage.set(K_GAME, JSON.stringify(S)); }catch(e){} }
+async function saveArch(){ try{ if(hasStore()) await window.storage.set(K_ARCH, JSON.stringify(archives)); }catch(e){} }
+async function wipeGame(){ try{ if(hasStore()) await window.storage.delete(K_GAME); }catch(e){} }
+async function read(k){ try{ if(!hasStore()) return null; const r=await window.storage.get(k); return r?JSON.parse(r.value):null; }catch(e){ return null; } }
+
+/* ═══════════ UTILITAIRES ═══════════ */
+const $app=document.getElementById("app"), $fab=document.getElementById("fab"),
+      $tb=document.getElementById("tb"), $tbr=document.getElementById("tbr"),
+      $modal=document.getElementById("modal");
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const sign = n => (n>0?"+":"")+n;
+const cls  = n => n>0?"pos":(n<0?"neg":"");
+
+/* ═══════════ BARRE SUPÉRIEURE ═══════════ */
+function renderTop(){
+  if (view==="setup" || !S){
+    $tb.innerHTML = `<span class="tb-btn" style="visibility:hidden">·</span>
+      <div class="tb-title"><div class="t1">Skull King</div><div class="t2">Journal de bord</div></div>
+      <button class="tb-btn" data-modal="apropos" aria-label="À propos">?</button>`;
+    $tbr.innerHTML = ""; $tbr.style.display="none";
+    return;
+  }
+  const inGame = view==="play";
+  $tb.innerHTML = `
+    <button class="tb-btn ${view==="menu"?"acc":""}" data-view="menu" aria-label="Menu">☰ <span>Menu</span></button>
+    <div class="tb-title">
+      <div class="t1">${view==="board"?"Classement":view==="menu"?"Menu":view==="archive"?"Parties passées":
+        (S.editing!==null?`Correction · manche ${S.editing+1}`:`Manche ${S.current+1} / ${S.schedule.length}`)}</div>
+      <div class="t2">${inGame?cardsNow()+" cartes":S.system==="sk"?"Décompte Skull King":"Décompte Rascal"}</div>
+    </div>
+    <button class="tb-btn ${view==="board"?"acc":""}" data-view="${view==="board"?"play":"board"}" aria-label="Classement">${view==="board"?"↩":"⚑"}</button>`;
+
+  if (view==="play" && S.rounds.length){
+    const T = totals();
+    const order = S.players.map((n,i)=>({n,i,s:T[i]})).sort((a,b)=>b.s-a.s);
+    $tbr.style.display="flex";
+    $tbr.innerHTML = order.map((p,k)=>`<span class="tb-pill ${k===0?"lead":""}">
+      ${esc(p.n)} <b class="${cls(p.s)}">${sign(p.s)}</b></span>`).join("");
+  } else { $tbr.innerHTML=""; $tbr.style.display="none"; }
+}
+
+/* ═══════════ ÉCRAN — MISE EN PLACE ═══════════ */
+let cfg = {names:["",""], system:"sk", bonusIfExact:false, cannonball:false,
+           extensions:false, flambeur:false, preset:"classique"};
+
+function renderSetup(){
+  const n = cfg.names.length;
+  const deck = cfg.extensions ? DECK_EXT : DECK_BASE;
+  const cap = Math.max(1, Math.floor(deck/Math.max(n,1)));
+  const raw = PRESETS[cfg.preset].gen();
+  const sched = raw.map(c=>Math.min(c,cap));
+  const capped = raw.some((c,i)=>c!==sched[i]);
+  const wins = {};
+  archives.forEach(a=>{ if(a.winner) wins[a.winner]=(wins[a.winner]||0)+1; });
+
+  $app.innerHTML = `
+  <div class="card">
+    <div class="eyebrow">Équipage — ${n} pirate${n>1?"s":""}</div>
+    ${cfg.names.map((v,i)=>{
+      const w = wins[v.trim()];
+      return `<div class="prow">
+        <span class="idx num">${i+1}</span>
+        <input type="text" data-name="${i}" value="${esc(v)}" placeholder="Nom du pirate ${i+1}" autocomplete="off">
+        ${w?`<span class="idx" style="width:auto;flex:0 0 auto;color:var(--brass)" title="${w} victoire${w>1?"s":""}">★${w}</span>`:""}
+        ${n>2?`<button class="del" data-delp="${i}" aria-label="Retirer">×</button>`:""}
+      </div>`;}).join("")}
+    ${n<MAX_PLAYERS?`<button class="btn-ghost" data-addp="1">+ Ajouter un joueur</button>`
+                   :`<div class="hint">Maximum ${MAX_PLAYERS} joueurs.</div>`}
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">Décompte des points</div>
+    <div class="chips" style="margin-bottom:10px">
+      <button class="chip wide" data-sys="sk"     aria-pressed="${cfg.system==="sk"}">Skull King</button>
+      <button class="chip wide" data-sys="rascal" aria-pressed="${cfg.system==="rascal"}">Rascal</button>
+    </div>
+    <div class="hint">${cfg.system==="sk"
+      ? "On ne gagne des points que si la mise est exacte&nbsp;: <strong>20 pts par pli</strong> annoncé et réalisé, <strong>−10 pts par pli d'écart</strong> sinon. Mise à zéro réussie&nbsp;: <strong>10 × le nombre de cartes</strong>, et autant en négatif si elle échoue."
+      : "Chaque manche vaut <strong>10 pts par carte distribuée</strong>, quelle que soit la mise&nbsp;: tout si elle est exacte, la moitié à 1 pli d'écart, rien à partir de 2."}</div>
+    ${cfg.system==="sk" ? `
+    <div class="toggle" data-tog="bonusIfExact" role="checkbox" tabindex="0" aria-checked="${cfg.bonusIfExact}" style="margin-top:6px">
+      <div class="switch"></div><div>
+      <div class="tl">Bonus liés à la mise</div>
+      <div class="td">Les bonus ne comptent que si la mise est exacte. Règle des anciennes éditions — la règle 2022 les accorde dans tous les cas.</div></div>
+    </div>` : `
+    <div class="toggle" data-tog="cannonball" role="checkbox" tabindex="0" aria-checked="${cfg.cannonball}" style="margin-top:6px">
+      <div class="switch"></div><div>
+      <div class="tl">Boulet de canon</div>
+      <div class="td">Chaque joueur choisit son pari, manche par manche&nbsp;: chevrotine (règle normale) ou boulet de canon — 15 pts par carte si la mise est exacte, 0 sinon.</div></div>
+    </div>`}
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">Règles avancées</div>
+    <div class="toggle" data-tog="extensions" role="checkbox" tabindex="0" aria-checked="${cfg.extensions}">
+      <div class="switch"></div><div>
+      <div class="tl">Butin, Kraken, Baleine blanche</div>
+      <div class="td">Ajoute les alliances Butin au décompte. Le Kraken et la Baleine annulant des plis, le total des plis pourra être inférieur au nombre de cartes.</div></div>
+    </div>
+    <div class="toggle" data-tog="flambeur" role="checkbox" tabindex="0" aria-checked="${cfg.flambeur}">
+      <div class="switch"></div><div>
+      <div class="tl">Rascal le Flambeur</div>
+      <div class="td">Pouvoir de pirate&nbsp;: parier 0, 10 ou 20 points sur sa propre mise. Gagnés si elle est exacte, perdus sinon.</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">Cartes distribuées</div>
+    <select data-preset="1">${Object.entries(PRESETS).map(([k,p])=>
+      `<option value="${k}" ${cfg.preset===k?"selected":""}>${p.label}</option>`).join("")}</select>
+    <div class="hint" style="margin-top:10px">
+      ${sched.length} manche${sched.length>1?"s":""} — <span class="num">${sched.join(" · ")}</span> cartes.
+      ${capped?`<br>Plafonné à ${cap}&nbsp;: le paquet de ${deck} cartes ne permet pas d'en distribuer plus à ${n} joueurs.`:""}
+    </div>
+  </div>
+  ${archives.length?`<button class="btn-ghost" data-view="archive">Parties passées (${archives.length})</button>`:""}`;
+
+  const ready = cfg.names.filter(x=>x.trim()).length>=2;
+  $fab.innerHTML = `<button class="btn" data-start="1" ${ready?"":"disabled"}>${ready?"Larguer les amarres":"Nomme au moins 2 pirates"}</button>`;
+}
+
+/* ═══════════ ÉCRAN — MANCHE ═══════════ */
+function renderPlay(){
+  const cards = cardsNow(), d = S.draft, editing = S.editing!==null;
+  const steps=[["bid","Mises"],["tricks","Plis"],["bonus","Bonus"],["recap","Récap"]];
+  const si = steps.findIndex(s=>s[0]===S.phase);
+  const T = editing ? totals(S.editing) : totals();
+  let body = "";
+
+  if (editing) body += `<div class="warn note">Correction de la manche ${S.editing+1}. Les totaux des manches suivantes seront recalculés.</div>`;
+
+  const nav = `<div class="steps">${steps.map((s,i)=>
+    `<button class="step ${i<si?"done":""}" data-goto="${s[0]}" aria-current="${s[0]===S.phase}">${s[1]}</button>`).join("")}</div>`;
+
+  /* — MISES — */
+  if (S.phase==="bid"){
+    const sum = d.entries.reduce((a,e)=>a+(e.bid??0),0);
+    const all = d.entries.every(e=>e.bid!==null);
+    body += d.entries.map((e,i)=>`
+      <div class="pblock ${e.bid===null?"":"hot"}">
+        <div class="ph"><span class="pn">${esc(S.players[i])}</span>
+          <span class="pt">${T[i]} pts${e.bid!==null?" · mise "+e.bid:""}</span></div>
+        <div class="chips">${Array.from({length:cards+1},(_,k)=>
+          `<button class="chip" data-bid="${i}" data-v="${k}" aria-pressed="${e.bid===k}">${k}</button>`).join("")}</div>
+        ${S.system==="rascal"&&S.cannonball?`
+        <div class="disclose" style="cursor:default"><span>Pari</span><span class="chips">
+          <button class="chip sm" data-cannon="${i}" data-v="0" aria-pressed="${!e.cannon}">Chevrotine</button>
+          <button class="chip sm" data-cannon="${i}" data-v="1" aria-pressed="${e.cannon}">Boulet</button>
+        </span></div>`:""}
+        ${S.flambeur?`
+        <div class="disclose" style="cursor:default"><span>Flambeur</span><span class="chips">${[0,10,20].map(v=>
+          `<button class="chip sm" data-flam="${i}" data-v="${v}" aria-pressed="${e.flam===v}">${v}</button>`).join("")}
+        </span></div>`:""}
+      </div>`).join("");
+    body += `<div class="hint" style="text-align:center;padding:4px 0 10px">Total des mises&nbsp;:
+      <span class="num">${sum}</span> pour <span class="num">${cards}</span> pli${cards>1?"s":""}${
+      sum===cards?" — la manche s'annonce serrée.":sum<cards?" — des plis restent à prendre.":" — quelqu'un va tomber à l'eau."}</div>`;
+    $fab.innerHTML = `<button class="btn" data-goto="tricks" ${all?"":"disabled"}>${all?"Mises enregistrées, on joue":"Chaque pirate doit miser"}</button>`;
+  }
+
+  /* — PLIS — */
+  if (S.phase==="tricks"){
+    const sum = d.entries.reduce((a,e)=>a+(e.won??0),0);
+    const all = d.entries.every(e=>e.won!==null);
+    if (all && sum>cards) body += `<div class="warn">Vous avez compté <strong>${sum} plis</strong> pour <strong>${cards} cartes</strong>. Un pli a été attribué deux fois.</div>`;
+    else if (all && sum<cards) body += S.extensions
+      ? `<div class="warn ok">${cards-sum} pli${cards-sum>1?"s":""} manquant${cards-sum>1?"s":""} — normal si le Kraken ou la Baleine blanche l'ont dévoré.</div>`
+      : `<div class="warn">Il manque ${cards-sum} pli${cards-sum>1?"s":""} sur ${cards}.</div>`;
+    body += d.entries.map((e,i)=>{
+      const s = e.won!==null ? scoreEntry(e,cards,0) : null;
+      return `<div class="pblock ${e.won===null?"":"hot"}">
+        <div class="ph"><span class="pn">${esc(S.players[i])}</span>
+          <span class="pt">a misé ${e.bid}${s?` · ${sign(s.base)} pts`:""}</span></div>
+        <div class="chips">${Array.from({length:cards+1},(_,k)=>
+          `<button class="chip" data-won="${i}" data-v="${k}" aria-pressed="${e.won===k}">${k}</button>`).join("")}</div>
+      </div>`;}).join("");
+    $fab.innerHTML = `<button class="btn" data-goto="bonus" ${all?"":"disabled"}>${all?"Compter les bonus":"Compte les plis de chacun"}</button>`;
+  }
+
+  /* — BONUS — */
+  if (S.phase==="bonus"){
+    const B=(i,key,label,detail,max,val)=>`<div class="bonusline">
+      <span class="bl">${label}<span class="bv">${detail}</span></span>
+      <span class="chips">${Array.from({length:max+1},(_,k)=>
+        `<button class="chip sm" data-b="${key}" data-p="${i}" data-v="${k}" aria-pressed="${val===k}">${k}</button>`).join("")}</span></div>`;
+    body += d.entries.map((e,i)=>{
+      const b = bonusRaw(e);
+      return `<div class="pblock ${b?"hot":""}">
+        <div class="ph"><span class="pn">${esc(S.players[i])}</span>
+          <span class="tally">${b?sign(b):"aucun bonus"}</span></div>
+        <button class="disclose" data-open="${i}">
+          <span>${e.open?"Masquer le détail":"Cartes capturées en fin de manche"}</span><span>${e.open?"▲":"▼"}</span></button>
+        ${e.open?`
+          ${B(i,"c14","Cartes 14 de couleur classique","vert, violet ou jaune · 10 pts pièce",3,e.c14)}
+          <div class="bonusline"><span class="bl">Carte 14 noire<span class="bv">drapeau pirate · 20 pts</span></span>
+            <span class="chips">
+              <button class="chip sm" data-b="n14" data-p="${i}" data-v="0" aria-pressed="${!e.n14}">non</button>
+              <button class="chip sm" data-b="n14" data-p="${i}" data-v="1" aria-pressed="${e.n14}">oui</button></span></div>
+          ${B(i,"mer","Sirènes capturées par un pirate","20 pts pièce",2,e.mer)}
+          ${B(i,"pir","Pirates capturés par le Skull King","30 pts pièce · Tigresse comprise",6,e.pir)}
+          ${B(i,"sk","Skull King capturé par votre sirène","40 pts",1,e.sk)}`:""}
+      </div>`;}).join("");
+
+    if (S.extensions){
+      const opts = S.players.map((p,i)=>`<option value="${i}">${esc(p)}</option>`).join("");
+      body += `<div class="card"><div class="eyebrow">Alliances Butin</div>
+        <div class="hint" style="margin-bottom:10px">Le joueur qui pose un Butin s'allie à celui qui remporte le pli. <strong>20 pts chacun</strong>, à condition que tous deux réussissent leur mise.</div>
+        ${d.alliances.map((a,k)=>`<div class="prow">
+          <select data-ally="${k}" data-side="0">${opts}</select>
+          <span class="idx" style="width:auto;flex:0 0 auto">+</span>
+          <select data-ally="${k}" data-side="1">${opts}</select>
+          <button class="del" data-delally="${k}" aria-label="Supprimer">×</button></div>`).join("")}
+        ${d.alliances.length<2?`<button class="btn-ghost" data-addally="1">+ Déclarer une alliance</button>`:""}</div>`;
+      setTimeout(()=>d.alliances.forEach((a,k)=>
+        document.querySelectorAll(`[data-ally="${k}"]`).forEach(s=>{s.value=a[+s.dataset.side];})),0);
+    }
+    $fab.innerHTML = `<button class="btn" data-goto="recap">Voir le décompte</button>`;
+  }
+
+  /* — RÉCAP — */
+  if (S.phase==="recap"){
+    const R = scoreDraft(d, cards);
+    body += `<div class="card"><div class="eyebrow">Manche ${roundIndex()+1} — ${cards} carte${cards>1?"s":""}</div>
+      <div class="scroll"><table class="recap"><thead><tr>
+        <th>Pirate</th><th>Mise</th><th>Plis</th><th>Mise</th><th>Bonus</th>${S.flambeur?"<th>Flamb.</th>":""}<th>Manche</th><th>Total</th>
+      </tr></thead><tbody>${R.map((r,i)=>`<tr>
+        <td>${esc(S.players[i])}</td>
+        <td>${d.entries[i].bid}</td>
+        <td class="${r.exact?"pos":"neg"}">${d.entries[i].won}</td>
+        <td class="${cls(r.base)}">${sign(r.base)}</td>
+        <td class="${cls(r.bonus)}">${r.bonus?sign(r.bonus):"—"}</td>
+        ${S.flambeur?`<td class="${cls(r.flam)}">${r.flam?sign(r.flam):"—"}</td>`:""}
+        <td class="${cls(r.total)}"><strong>${sign(r.total)}</strong></td>
+        <td class="num">${T[i]+r.total}</td></tr>`).join("")}</tbody></table></div></div>`;
+    const last = !editing && S.current===S.schedule.length-1;
+    $fab.innerHTML = editing
+      ? `<div class="btn-row"><button class="btn-ghost" data-cancel="1">Annuler</button><button class="btn" data-commit="1">Enregistrer la correction</button></div>`
+      : `<button class="btn" data-commit="1">${last?"Clore le journal":"Valider et passer à la manche "+(S.current+2)}</button>`;
+  }
+
+  $app.innerHTML = nav + body +
+    `<button class="btn-ghost" data-modal="regle" style="margin-top:6px">Rappel de la règle de décompte</button>`;
+}
+
+/* ═══════════ ÉCRAN — CLASSEMENT ═══════════ */
+function chart(){
+  if (S.rounds.length<2) return "";
+  const n = S.rounds.length, W=560, H=200, PL=8, PR=8, PT=14, PB=22;
+  const series = S.players.map((_,i)=>{ let c=0; return [0, ...S.rounds.map(r=>c+=r.scores[i])]; });
+  const flat = series.flat();
+  let lo=Math.min(...flat), hi=Math.max(...flat);
+  if (hi===lo){hi+=10;lo-=10;}
+  const pad=(hi-lo)*0.08; lo-=pad; hi+=pad;
+  const X = k => PL + k*(W-PL-PR)/n;
+  const Y = v => PT + (hi-v)*(H-PT-PB)/(hi-lo);
+  const zero = (lo<0&&hi>0) ? `<line x1="${PL}" x2="${W-PR}" y1="${Y(0)}" y2="${Y(0)}" stroke="#2A6377" stroke-width="1" stroke-dasharray="3 4"/>` : "";
+  return `<div class="card"><div class="eyebrow">Évolution</div>
+    <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution des scores manche par manche">
+      ${zero}
+      ${series.map((s,i)=>`<polyline fill="none" stroke="${COLORS[i%10]}" stroke-width="2.2"
+        stroke-linejoin="round" stroke-linecap="round"
+        points="${s.map((v,k)=>`${X(k).toFixed(1)},${Y(v).toFixed(1)}`).join(" ")}"/>`).join("")}
+      ${series.map((s,i)=>`<circle cx="${X(n).toFixed(1)}" cy="${Y(s[n]).toFixed(1)}" r="3.4" fill="${COLORS[i%10]}"/>`).join("")}
+      ${Array.from({length:n+1},(_,k)=>k%Math.ceil((n+1)/6)===0?
+        `<text x="${X(k).toFixed(1)}" y="${H-6}" fill="#5C7C89" font-size="10" font-family="Space Mono,monospace" text-anchor="middle">${k}</text>`:"").join("")}
+    </svg>
+    <div class="legend">${S.players.map((p,i)=>
+      `<span><i class="dot" style="background:${COLORS[i%10]}"></i>${esc(p)}</span>`).join("")}</div></div>`;
+}
+
+function statsBlock(){
+  if (!S.rounds.length) return "";
+  let best={v:-1e9}, worst={v:1e9}, exact=0, tries=0, zeros=0;
+  S.rounds.forEach((r,k)=>r.scores.forEach((v,i)=>{
+    if (v>best.v) best={v,i,k}; if (v<worst.v) worst={v,i,k};
+    const e=r.entries[i]; tries++;
+    if (e.bid===e.won){ exact++; if(e.bid===0) zeros++; }
+  }));
+  const st=(l,v,s)=>`<div class="stat"><div class="sl">${l}</div><div class="sv">${v}</div><div class="ss">${s}</div></div>`;
+  return `<div class="card"><div class="eyebrow">Faits d'armes</div><div class="stats">
+    ${st("Meilleure manche", esc(S.players[best.i]), sign(best.v)+" pts · manche "+(best.k+1))}
+    ${st("Pire naufrage",    esc(S.players[worst.i]), sign(worst.v)+" pts · manche "+(worst.k+1))}
+    ${st("Mises exactes",    Math.round(100*exact/tries)+" %", exact+" sur "+tries)}
+    ${st("Zéros tenus",      zeros, zeros>1?"mises à zéro réussies":"mise à zéro réussie")}
+  </div></div>`;
+}
+
+function renderBoard(){
+  const T = totals();
+  const prev = S.rounds.length>1 ? totals(S.rounds.length-1) : null;
+  const order = S.players.map((n,i)=>({n,i,s:T[i],d:prev?T[i]-prev[i]:null})).sort((a,b)=>b.s-a.s);
+  const afloat = order.filter(p=>p.s>=0), sunk = order.filter(p=>p.s<0);
+  const row=(p,rank,lead)=>`<div class="frow ${lead?"lead":""} ${p.s<0?"sunk":""}">
+    <span class="rk">${rank}</span><span class="nm">${esc(p.n)}</span>
+    ${p.d!==null?`<span class="dl ${cls(p.d)}">${sign(p.d)}</span>`:""}
+    ${p.s<0?`<span class="bubbles">° ˚ ·</span>`:""}
+    <span class="sc ${cls(p.s)}">${sign(p.s)}</span></div>`;
+
+  $app.innerHTML = `
+    ${gameOver&&order.length?`<div class="card" style="text-align:center">
+      <div class="eyebrow">Fin de la traversée</div>
+      <div class="display" style="font-size:27px;color:var(--brass);margin-top:8px">${esc(order[0].n)}</div>
+      <div class="hint">Capitaine des Sept Mers</div></div>`:""}
+    <div>${afloat.map((p,k)=>row(p,k+1,k===0&&p.s>0)).join("")}
+      ${sunk.length?`<div class="wl-mark">ligne de flottaison</div>`:""}
+      ${sunk.map((p,k)=>row(p,afloat.length+k+1,false)).join("")}</div>
+    ${chart()}
+    ${statsBlock()}
+    ${S.rounds.length?`<div class="card"><div class="eyebrow">Détail — touchez une manche pour la corriger</div>
+      <div class="scroll"><table class="recap"><thead><tr><th>M.</th>
+        ${S.players.map(p=>`<th>${esc(p.slice(0,7))}</th>`).join("")}</tr></thead><tbody>
+        ${S.rounds.map((r,k)=>`<tr class="editable" data-edit="${k}">
+          <td class="num" style="font-size:12.5px">${k+1}<span style="color:var(--mist-dim)"> ·${r.cards}c</span></td>
+          ${r.scores.map(v=>`<td class="${cls(v)}">${sign(v)}</td>`).join("")}</tr>`).join("")}
+        <tr><td><strong>Σ</strong></td>${T.map(v=>`<td class="num"><strong>${v}</strong></td>`).join("")}</tr>
+      </tbody></table></div></div>`:`<div class="card hint">Aucune manche jouée pour l'instant.</div>`}`;
+
+  $fab.innerHTML = gameOver
+    ? `<div class="btn-row"><button class="btn-ghost" data-modal="export">Partager</button><button class="btn" data-modal="fin">Terminer</button></div>`
+    : `<button class="btn" data-view="play">Reprendre la manche ${S.current+1}</button>`;
+}
+
+/* ═══════════ ÉCRAN — MENU ═══════════ */
+function renderMenu(){
+  $app.innerHTML = `
+    <div class="card">
+      <div class="eyebrow">Partie en cours</div>
+      <div class="hint" style="margin-bottom:12px">
+        ${S.players.length} joueurs · ${S.system==="sk"?"décompte Skull King":"décompte Rascal"} ·
+        manche ${S.current+1} sur ${S.schedule.length}${S.rounds.length?` · ${S.rounds.length} manche${S.rounds.length>1?"s":""} enregistrée${S.rounds.length>1?"s":""}`:""}.
+      </div>
+      <button class="btn" data-view="play" style="margin-bottom:8px">Reprendre la manche ${S.current+1}</button>
+      <button class="btn-ghost" data-view="board" style="margin-bottom:8px">Classement et corrections</button>
+      <button class="btn-ghost" data-modal="regle">Rappel de la règle de décompte</button>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Renommer l'équipage</div>
+      ${S.players.map((p,i)=>`<div class="prow"><span class="idx num">${i+1}</span>
+        <input type="text" data-rename="${i}" value="${esc(p)}" autocomplete="off"></div>`).join("")}
+      <div class="hint">Les noms se mettent à jour immédiatement. Le nombre de joueurs ne peut pas changer en cours de partie.</div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Ajuster les règles en cours de route</div>
+      ${S.system==="sk"?`
+      <div class="toggle" data-live="bonusIfExact" role="checkbox" tabindex="0" aria-checked="${S.bonusIfExact}">
+        <div class="switch"></div><div><div class="tl">Bonus liés à la mise</div>
+        <div class="td">Recalcule aussitôt toutes les manches déjà jouées.</div></div></div>`:`
+      <div class="toggle" data-live="cannonball" role="checkbox" tabindex="0" aria-checked="${S.cannonball}">
+        <div class="switch"></div><div><div class="tl">Boulet de canon</div>
+        <div class="td">Active le choix chevrotine / boulet à chaque mise.</div></div></div>`}
+      <div class="toggle" data-live="extensions" role="checkbox" tabindex="0" aria-checked="${S.extensions}">
+        <div class="switch"></div><div><div class="tl">Butin, Kraken, Baleine blanche</div>
+        <div class="td">Alliances Butin et tolérance sur le nombre de plis.</div></div></div>
+      <div class="toggle" data-live="flambeur" role="checkbox" tabindex="0" aria-checked="${S.flambeur}">
+        <div class="switch"></div><div><div class="tl">Rascal le Flambeur</div>
+        <div class="td">Pari de 0, 10 ou 20 points sur sa propre mise.</div></div></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Journal</div>
+      ${archives.length?`<button class="btn-ghost" data-view="archive" style="margin-bottom:8px">Parties passées (${archives.length})</button>`:""}
+      ${S.rounds.length?`<button class="btn-ghost" data-modal="undo" style="margin-bottom:8px">Annuler la manche ${S.rounds.length}</button>`:""}
+      <button class="btn-ghost" data-modal="export" style="margin-bottom:8px">Partager le score</button>
+      <button class="btn-ghost btn-danger" data-modal="abandon">Abandonner cette partie</button>
+    </div>`;
+  $fab.innerHTML = `<button class="btn" data-view="play">Retour à la manche ${S.current+1}</button>`;
+}
+
+/* ═══════════ ÉCRAN — ARCHIVES ═══════════ */
+function renderArchive(){
+  $app.innerHTML = archives.length ? archives.slice().reverse().map((a,k)=>{
+    const idx = archives.length-1-k;
+    return `<div class="card">
+      <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+        <span class="display" style="font-size:19px;color:var(--brass)">${esc(a.winner)}</span>
+        <span class="num" style="font-size:12px;color:var(--mist-dim)">${a.date}</span></div>
+      <div class="hint" style="margin:6px 0 10px">${a.system==="sk"?"Skull King":"Rascal"} · ${a.rounds} manches</div>
+      <table class="recap"><tbody>${a.standings.map((p,i)=>`<tr>
+        <td>${i+1}. ${esc(p.n)}</td><td class="${cls(p.s)}">${sign(p.s)}</td></tr>`).join("")}</tbody></table>
+      <button class="btn-ghost btn-danger" data-delarch="${idx}" style="margin-top:10px">Supprimer</button>
+    </div>`;}).join("")
+    : `<div class="card hint">Aucune partie terminée pour l'instant. Elles s'archiveront ici automatiquement.</div>`;
+  $fab.innerHTML = `<button class="btn" data-view="${S?"menu":"setup"}">Retour</button>`;
+}
+
+/* ═══════════ MODALES ═══════════ */
+function exportText(){
+  const T = totals();
+  const order = S.players.map((n,i)=>({n,s:T[i]})).sort((a,b)=>b.s-a.s);
+  let t = `SKULL KING — ${new Date().toLocaleDateString("fr-FR")}\n`;
+  t += `${S.system==="sk"?"Décompte Skull King":"Décompte Rascal"} · ${S.rounds.length} manche(s)\n\n`;
+  order.forEach((p,i)=>{ t += `${i+1}. ${p.n} — ${sign(p.s)}\n`; });
+  t += `\nManche | ${S.players.join(" | ")}\n`;
+  S.rounds.forEach((r,k)=>{ t += `${k+1} (${r.cards}c) | ${r.scores.map(sign).join(" | ")}\n`; });
+  return t;
+}
+
+function renderModal(){
+  if (!modal){ $modal.innerHTML=""; return; }
+  const M = {
+    abandon:{t:"Abandonner la partie ?",
+      b:"La partie en cours sera effacée et ne sera pas archivée. Les manches déjà jouées seront perdues.",
+      a:[["Garder la partie",""],["Abandonner","data-do=\"abandon\" class=\"btn btn-danger\" style=\"background:transparent;color:#e08a78\""]]},
+    undo:{t:`Annuler la manche ${S?S.rounds.length:""} ?`,
+      b:"Elle repassera en saisie avec ses valeurs actuelles. Vous pourrez la rejouer ou la corriger.",
+      a:[["Non",""],["Annuler la manche","data-do=\"undo\" class=\"btn\""]]},
+    fin:{t:"Clore le journal ?",
+      b:"La partie sera archivée dans les parties passées, puis une nouvelle mise en place s'ouvrira.",
+      a:[["Pas encore",""],["Archiver","data-do=\"archive\" class=\"btn\""]]},
+    export:{t:"Partager le score", custom:`
+      <textarea readonly id="exp">${esc(S?exportText():"")}</textarea>
+      <div class="hint" style="margin-top:8px">Sélectionnez le texte pour le copier si le bouton ne fonctionne pas.</div>`,
+      a:[["Fermer",""],["Copier","data-do=\"copy\" class=\"btn\""]]},
+    regle:{t:"Rappel du décompte", custom:S?`<div class="body">
+      ${S.system==="sk"?`
+      <strong>Système Skull King</strong>
+      <ul><li>Mise sur 1 ou plus, exacte&nbsp;: <strong>+20 pts par pli</strong>.</li>
+      <li>Mise ratée&nbsp;: <strong>−10 pts par pli d'écart</strong>, et rien pour les plis pris.</li>
+      <li>Mise sur zéro tenue&nbsp;: <strong>+10 pts × le nombre de cartes</strong> de la manche.</li>
+      <li>Mise sur zéro ratée&nbsp;: <strong>−10 pts × le nombre de cartes</strong>.</li></ul>`:`
+      <strong>Système Rascal</strong>
+      <ul><li>Chaque manche vaut <strong>10 pts par carte distribuée</strong>, identique pour tous.</li>
+      <li>Coup direct (mise exacte)&nbsp;: <strong>tous</strong> les points, bonus compris.</li>
+      <li>Frappe à revers (1 d'écart)&nbsp;: <strong>la moitié</strong> des points et des bonus.</li>
+      <li>Échec cuisant (2 ou plus)&nbsp;: <strong>rien</strong>.</li>
+      ${S.cannonball?`<li>Boulet de canon&nbsp;: <strong>15 pts par carte</strong> si la mise est exacte, <strong>0</strong> sinon.</li>`:""}</ul>`}
+      <strong style="display:block;margin-top:12px">Bonus</strong>
+      <ul><li>10 pts par carte <strong>14 de couleur classique</strong> possédée en fin de manche, 20 pts pour le <strong>14 noir</strong>.</li>
+      <li>20 pts par <strong>sirène capturée par un pirate</strong>.</li>
+      <li>30 pts par <strong>pirate capturé par le Skull King</strong>.</li>
+      <li>40 pts si votre <strong>sirène capture le Skull King</strong>.</li>
+      ${S.extensions?`<li>20 pts chacun pour une <strong>alliance Butin</strong>, si les deux alliés réussissent leur mise.</li>`:""}</ul>
+      ${S.system==="sk"?`<div style="margin-top:12px;font-size:13px;color:var(--mist-dim)">Les bonus sont ici accordés
+        ${S.bonusIfExact?"<strong>uniquement si la mise est exacte</strong> (option activée).":"<strong>quelle que soit la mise</strong>, conformément à la règle 2022. L'option inverse existe dans le menu."}</div>`:""}
+      </div>`:"", a:[["Fermer",""]]},
+    apropos:{t:"Journal de bord", custom:`<div class="body">
+      Feuille de score pour <strong>Skull King</strong> de Grandpa Beck's Games, d'après la règle française
+      Blackrock Games 2022. Application non officielle, sans lien avec l'éditeur.
+      <br><br>Tout se calcule automatiquement&nbsp;: mises, plis, bonus, alliances. La partie en cours est
+      conservée si vous fermez l'onglet.</div>`, a:[["Fermer",""]]}
+  }[modal];
+  if (!M){ $modal.innerHTML=""; return; }
+
+  $modal.innerHTML = `<div class="scrim" data-scrim="1"><div class="modal" role="dialog" aria-modal="true">
+    <h3>${M.t}</h3>${M.custom||`<div class="body">${M.b}</div>`}
+    <div class="btn-row" style="margin-top:14px">${M.a.map(([label,attr])=>
+      attr?`<button ${attr}>${label}</button>`:`<button class="btn-ghost" data-do="close">${label}</button>`).join("")}</div>
+  </div></div>`;
+}
+
+/* ═══════════ ROUTAGE ═══════════ */
+function render(){
+  if (view==="setup"||!S) renderSetup();
+  else if (view==="menu") renderMenu();
+  else if (view==="board") renderBoard();
+  else if (view==="archive") renderArchive();
+  else renderPlay();
+  renderTop(); renderModal();
+  if (scrollTop) window.scrollTo({top:0});
+  scrollTop = true;
+}
+const quiet = fn => { scrollTop=false; fn(); render(); };
+
+/* ═══════════ ÉVÉNEMENTS ═══════════ */
+document.addEventListener("input", e=>{
+  const t=e.target;
+  if (t.dataset.name!==undefined){
+    cfg.names[+t.dataset.name]=t.value;
+    const ok = cfg.names.filter(x=>x.trim()).length>=2;
+    const b = $fab.querySelector("[data-start]");
+    if(b){ b.disabled=!ok; b.textContent = ok?"Larguer les amarres":"Nomme au moins 2 pirates"; }
+  }
+  if (t.dataset.rename!==undefined){ S.players[+t.dataset.rename]=t.value||`Pirate ${+t.dataset.rename+1}`; save(); renderTop(); }
+});
+
+document.addEventListener("change", e=>{
+  const t=e.target;
+  if (t.dataset.preset){ cfg.preset=t.value; quiet(()=>{}); }
+  if (t.dataset.ally!==undefined){ S.draft.alliances[+t.dataset.ally][+t.dataset.side]=+t.value; save(); }
+});
+
+document.addEventListener("keydown", e=>{
+  if ((e.key===" "||e.key==="Enter") && e.target.classList?.contains("toggle")){ e.preventDefault(); e.target.click(); }
+  if (e.key==="Escape" && modal){ modal=null; renderModal(); }
+});
+
+document.addEventListener("click", async e=>{
+  if (e.target.dataset.scrim){ modal=null; return renderModal(); }
+  const tr = e.target.closest("tr[data-edit]");
+  if (tr && !e.target.closest("button")){
+    const k = +tr.dataset.edit;
+    S.editing = k; S.phase = "bid";
+    S.draft = {entries:S.rounds[k].entries.map(x=>({...x,open:false})),
+               alliances:S.rounds[k].alliances.map(a=>[...a])};
+    view = "play"; await save(); return render();
+  }
+
+  const b = e.target.closest("button, .toggle");
+  if (!b) return;
+  const d = b.dataset;
+
+  /* mise en place */
+  if (d.addp){ cfg.names.push(""); return quiet(()=>{}); }
+  if (d.delp!==undefined){ cfg.names.splice(+d.delp,1); return quiet(()=>{}); }
+  if (d.sys){ cfg.system=d.sys; return quiet(()=>{}); }
+  if (d.tog){ cfg[d.tog]=!cfg[d.tog]; return quiet(()=>{}); }
+  if (d.start){
+    const names = cfg.names.map((n,i)=>n.trim()||`Pirate ${i+1}`);
+    S = {players:names, system:cfg.system, bonusIfExact:cfg.bonusIfExact, cannonball:cfg.cannonball,
+         extensions:cfg.extensions, flambeur:cfg.flambeur, schedule:PRESETS[cfg.preset].gen(),
+         current:0, phase:"bid", rounds:[], draft:null, editing:null};
+    S.schedule = S.schedule.map(c=>Math.min(c,maxCards()));
+    S.draft = newDraft(); view="play"; gameOver=false; await save(); return render();
+  }
+
+  /* saisie */
+  if (d.bid!==undefined){ S.draft.entries[+d.bid].bid=+d.v; save(); return quiet(()=>{}); }
+  if (d.won!==undefined){ S.draft.entries[+d.won].won=+d.v; save(); return quiet(()=>{}); }
+  if (d.cannon!==undefined){ S.draft.entries[+d.cannon].cannon=d.v==="1"; save(); return quiet(()=>{}); }
+  if (d.flam!==undefined){ S.draft.entries[+d.flam].flam=+d.v; save(); return quiet(()=>{}); }
+  if (d.open!==undefined){ const en=S.draft.entries[+d.open]; en.open=!en.open; return quiet(()=>{}); }
+  if (d.b){ const en=S.draft.entries[+d.p];
+    if (d.b==="n14") en.n14 = d.v==="1"; else en[d.b]=+d.v; save(); return quiet(()=>{}); }
+  if (d.addally){ S.draft.alliances.push([0,Math.min(1,S.players.length-1)]); save(); return quiet(()=>{}); }
+  if (d.delally!==undefined){ S.draft.alliances.splice(+d.delally,1); save(); return quiet(()=>{}); }
+
+  /* navigation */
+  if (d.goto){
+    const t=d.goto;
+    if (t!=="bid" && S.draft.entries.some(x=>x.bid===null)) return;
+    if ((t==="bonus"||t==="recap") && S.draft.entries.some(x=>x.won===null)) return;
+    S.phase=t; view="play"; save(); return render();
+  }
+  if (d.view){ view=d.view; return render(); }
+  if (d.modal){ modal=d.modal; return renderModal(); }
+
+  /* réglages en cours de partie */
+  if (d.live){ S[d.live]=!S[d.live]; recomputeAll(); await save(); return quiet(()=>{}); }
+
+  /* validation d'une manche */
+  if (d.commit){
+    const idx = roundIndex(), cards = cardsOf(idx), dr = S.draft;
+    const rec = {cards, entries:dr.entries.map(x=>({...x,open:false})),
+                 alliances:dr.alliances.map(a=>[...a]),
+                 scores:scoreDraft(dr,cards).map(x=>x.total)};
+    if (S.editing!==null){ S.rounds[idx]=rec; S.editing=null; S.draft=newDraft(); S.phase="bid"; view="board"; }
+    else {
+      S.rounds.push(rec);
+      if (S.current===S.schedule.length-1){ gameOver=true; view="board"; }
+      else { S.current++; S.phase="bid"; S.draft=newDraft(); }
+    }
+    await save(); return render();
+  }
+  if (d.cancel){ S.editing=null; S.phase="bid"; S.draft=newDraft(); view="board"; await save(); return render(); }
+
+  /* actions de modale */
+  if (d.do==="close"){ modal=null; return renderModal(); }
+  if (d.do==="copy"){
+    const ta=document.getElementById("exp");
+    try{ await navigator.clipboard.writeText(ta.value); b.textContent="Copié"; }
+    catch(err){ ta.select(); b.textContent="Sélectionné"; }
+    return;
+  }
+  if (d.do==="undo"){
+    const last=S.rounds.pop();
+    S.current=Math.max(0,S.current-(gameOver?0:1));
+    if (gameOver){ gameOver=false; S.current=S.rounds.length; }
+    S.draft={entries:last.entries.map(x=>({...x,open:false})), alliances:last.alliances.map(a=>[...a])};
+    S.phase="bid"; S.editing=null; modal=null; view="play"; await save(); return render();
+  }
+  if (d.do==="abandon"){ await wipeGame(); S=null; gameOver=false; modal=null; view="setup"; return render(); }
+  if (d.do==="archive"){
+    const T=totals();
+    archives.push({date:new Date().toLocaleDateString("fr-FR"), system:S.system, rounds:S.rounds.length,
+      standings:S.players.map((n,i)=>({n,s:T[i]})).sort((a,b)=>b.s-a.s),
+      winner:S.players.map((n,i)=>({n,s:T[i]})).sort((a,b)=>b.s-a.s)[0].n});
+    await saveArch(); await wipeGame();
+    cfg.names = S.players.slice(); cfg.system=S.system; cfg.bonusIfExact=S.bonusIfExact;
+    cfg.cannonball=S.cannonball; cfg.extensions=S.extensions; cfg.flambeur=S.flambeur;
+    S=null; gameOver=false; modal=null; view="setup"; return render();
+  }
+  if (d.delarch!==undefined){ archives.splice(+d.delarch,1); await saveArch(); return render(); }
+});
+
+/* ═══════════ DÉMARRAGE ═══════════ */
+(async ()=>{
+  archives = (await read(K_ARCH)) || [];
+  const saved = await read(K_GAME);
+  if (saved && saved.players){
+    S = saved;
+    if (S.editing===undefined) S.editing=null;
+    if (!S.draft) S.draft = newDraft();
+    gameOver = S.rounds.length >= S.schedule.length;
+    view = gameOver ? "board" : "play";
+  }
+  render();
+})();
+</script>
+</body>
+</html>

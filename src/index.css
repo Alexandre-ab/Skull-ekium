@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  /* Palette : une nuit en mer. */
+  --color-abysse: #071722;
+  --color-coque: #0e2635;
+  --color-pont: #16394d;
+  --color-cordage: #235a75;
+  --color-or: #d9a23f;
+  --color-ecume: #e8eef2;
+  --color-brume: #90a9b8;
+  --color-tribord: #4fc3a6;
+  --color-babord: #d45b44;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-abysse);
+  color: var(--color-ecume);
+  /* Encoche iPhone : l'appli occupe tout l'écran sans passer sous la barre. */
+  padding-bottom: env(safe-area-inset-bottom);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
+}
+
+/* Focus clavier toujours visible, y compris sur fond sombre. */
+:focus-visible {
+  outline: 2px solid var(--color-or);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

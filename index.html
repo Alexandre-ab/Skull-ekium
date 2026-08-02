@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#071722" />
+    <meta name="description" content="Feuille de score pour le jeu de cartes Skull King" />
+
+    <!--
+      Écran d'accueil iOS : Safari ne lit pas le manifeste pour l'icône ni pour
+      le nom. Sans ces balises, l'appli installée s'affiche avec une capture de
+      la page en guise d'icône.
+    -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Skull King" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- « black » et non « black-translucent » : le contenu passerait sous la
+         barre d'état, or seule l'encoche du bas est compensée en CSS. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+    <title>Skull King — Journal de bord</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

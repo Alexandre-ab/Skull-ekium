@@ -1,0 +1,274 @@
+/**
+ * Moteur de score — fonctions pures uniquement.
+ *
+ * Ce fichier ne connaît ni React, ni le DOM, ni `localStorage` : un état entre,
+ * un score sort. Toutes les valeurs du barème viennent de `rules.ts`.
+ */
+
+import type {
+  Entree,
+  Manche,
+  OptionsPartie,
+  ScoreEntree,
+  Systeme,
+} from "./types"
+import {
+  BONUS_ALLIANCE_BUTIN,
+  BONUS_PIRATE_CAPTURE,
+  BONUS_QUATORZE_COULEUR,
+  BONUS_QUATORZE_NOIR,
+  BONUS_SIRENE_CAPTUREE,
+  BONUS_SKULL_KING_CAPTURE,
+  ECART_FRAPPE_A_REVERS,
+  JOUEURS_MIN,
+  MULT_COUP_DIRECT,
+  MULT_ECHEC_CUISANT,
+  MULT_FRAPPE_A_REVERS,
+  PAQUET_BASE,
+  PAQUET_EXTENSIONS,
+  PENALITE_PAR_PLI_ECART,
+  POINTS_PAR_CARTE_BOULET,
+  POINTS_PAR_CARTE_CHEVROTINE,
+  POINTS_PAR_CARTE_MISE_ZERO,
+  POINTS_PAR_PLI_MISE_TENUE,
+} from "./rules"
+
+/* ═══════════ Paquet et cartes distribuées ═══════════ */
+
+/** Nombre de cartes en jeu, selon que les extensions sont utilisées. */
+export function taillePaquet(extensions: boolean): number {
+  return extensions ? PAQUET_EXTENSIONS : PAQUET_BASE
+}
+
+/**
+ * Cartes distribuables à chaque joueur sans épuiser le paquet.
+ *
+ * Le livret demande seulement que « chaque joueur ait le même nombre de cartes
+ * lors des dernières manches », sans donner de formule ; celle-ci vient de
+ * CLAUDE.md. Au moins une carte est toujours distribuée.
+ */
+export function cartesMaximum(nbJoueurs: number, extensions: boolean): number {
+  return Math.max(1, Math.floor(taillePaquet(extensions) / nbJoueurs))
+}
+
+/**
+ * Cartes réellement distribuées à une manche : la valeur du calendrier,
+ * ramenée au plafond du paquet. Rend 0 si la manche sort du calendrier.
+ */
+export function cartesDeLaManche(
+  calendrier: readonly number[],
+  indexManche: number,
+  nbJoueurs: number,
+  extensions: boolean,
+): number {
+  const prevues = calendrier[indexManche]
+  if (prevues === undefined) return 0
+  return Math.min(prevues, cartesMaximum(nbJoueurs, extensions))
+}
+
+/* ═══════════ Cohérence de la saisie ═══════════ */
+
+/** Verdict du contrôle de cohérence entre les plis saisis et les cartes distribuées. */
+export type CoherencePlis =
+  | { etat: "incomplet" }
+  | { etat: "exact" }
+  | { etat: "manquants"; ecart: number; tolere: boolean }
+  | { etat: "excedentaires"; ecart: number }
+
+/**
+ * Confronte la somme des plis saisis au nombre de cartes de la manche.
+ *
+ * Plus de plis que de cartes est toujours impossible. Moins de plis est
+ * légitime dans deux cas : le Kraken et la Baleine blanche détruisent des plis,
+ * et à deux joueurs le fantôme de Barbe Grise en remporte sans marquer.
+ */
+export function verifierPlis(
+  manche: Manche,
+  options: OptionsPartie,
+  nbJoueurs: number,
+): CoherencePlis {
+  if (manche.entrees.some((e) => e.plis === null)) return { etat: "incomplet" }
+
+  const somme = manche.entrees.reduce((total, e) => total + (e.plis ?? 0), 0)
+  if (somme === manche.cartes) return { etat: "exact" }
+  if (somme > manche.cartes) return { etat: "excedentaires", ecart: somme - manche.cartes }
+
+  return {
+    etat: "manquants",
+    ecart: manche.cartes - somme,
+    tolere: options.extensions || nbJoueurs === JOUEURS_MIN,
+  }
+}
+
+/* ═══════════ Points bonus ═══════════ */
+
+/**
+ * Points bonus d'une entrée, hors alliance Butin — celle-ci dépend de la
+ * réussite d'un autre joueur et se calcule au niveau de la manche.
+ */
+export function bonusBrut(entree: Entree): number {
+  return (
+    entree.quatorzeCouleur * BONUS_QUATORZE_COULEUR +
+    (entree.quatorzeNoir ? BONUS_QUATORZE_NOIR : 0) +
+    entree.sirenesCapturees * BONUS_SIRENE_CAPTUREE +
+    entree.piratesCaptures * BONUS_PIRATE_CAPTURE +
+    (entree.skullKingCapture ? BONUS_SKULL_KING_CAPTURE : 0)
+  )
+}
+
+/** La mise a été annoncée et tenue exactement. */
+function miseTenue(entree: Entree): boolean {
+  return entree.mise !== null && entree.mise === entree.plis
+}
+
+/**
+ * Nombre d'alliances Butin payantes pour un joueur.
+ *
+ * Les 20 points ne sont accordés que si **les deux** alliés tiennent leur mise,
+ * quelles que soient les options de la partie.
+ */
+export function compterAlliancesReussies(manche: Manche, joueur: number): number {
+  let reussies = 0
+  for (const [a, b] of manche.alliances) {
+    if (a !== joueur && b !== joueur) continue
+    const indexAllie = a === joueur ? b : a
+    const moi = manche.entrees[joueur]
+    const allie = manche.entrees[indexAllie]
+    if (!moi || !allie) continue
+    if (miseTenue(moi) && miseTenue(allie)) reussies++
+  }
+  return reussies
+}
+
+/* ═══════════ Score d'une entrée ═══════════ */
+
+/**
+ * Score d'un joueur pour une manche.
+ *
+ * @param cartes    cartes distribuées cette manche, plafond déjà appliqué
+ * @param alliances alliances Butin réussies par ce joueur
+ */
+export function scorerEntree(
+  entree: Entree,
+  cartes: number,
+  alliances: number,
+  systeme: Systeme,
+  options: OptionsPartie,
+): ScoreEntree {
+  const mise = entree.mise ?? 0
+  const plis = entree.plis ?? 0
+  const ecart = Math.abs(mise - plis)
+  const exacte = ecart === 0
+
+  const bonusPotentiel = bonusBrut(entree) + BONUS_ALLIANCE_BUTIN * alliances
+
+  // Le pari du Flambeur se règle en points fixes, hors de tout multiplicateur.
+  // Le pari nul est écarté d'emblée : le nier produirait -0, qui s'afficherait « -0 ».
+  const flambeur =
+    options.flambeurActif && entree.flambeur !== 0
+      ? exacte
+        ? entree.flambeur
+        : -entree.flambeur
+      : 0
+
+  const { base, bonus } =
+    systeme === "skullking"
+      ? pointsSkullKing(mise, ecart, exacte, cartes, bonusPotentiel, options)
+      : pointsRascal(entree, ecart, exacte, cartes, bonusPotentiel, options)
+
+  return { base, bonus, flambeur, total: base + bonus + flambeur, exacte, ecart }
+}
+
+/** Système classique : la mise seule décide du gain ou de la perte. */
+function pointsSkullKing(
+  mise: number,
+  ecart: number,
+  exacte: boolean,
+  cartes: number,
+  bonusPotentiel: number,
+  options: OptionsPartie,
+): { base: number; bonus: number } {
+  const base =
+    mise === 0
+      ? // La mise à zéro se compte par carte distribuée, jamais 20 × 0.
+        (exacte ? 1 : -1) * POINTS_PAR_CARTE_MISE_ZERO * cartes
+      : exacte
+        ? POINTS_PAR_PLI_MISE_TENUE * mise
+        : // Mise ratée : rien pour les plis pris, la pénalité suit l'écart.
+          -PENALITE_PAR_PLI_ECART * ecart
+
+  // Par défaut les bonus restent acquis ; l'option rétablit l'ancienne édition.
+  const bonus = options.bonusSiMiseExacte && !exacte ? 0 : bonusPotentiel
+
+  return { base, bonus }
+}
+
+/**
+ * Système Rascal : le potentiel est le même pour tous, seule la précision
+ * décide de la part obtenue. Les bonus suivent le même multiplicateur.
+ */
+function pointsRascal(
+  entree: Entree,
+  ecart: number,
+  exacte: boolean,
+  cartes: number,
+  bonusPotentiel: number,
+  options: OptionsPartie,
+): { base: number; bonus: number } {
+  const boulet = options.bouletActif && entree.boulet
+  const parCarte = boulet ? POINTS_PAR_CARTE_BOULET : POINTS_PAR_CARTE_CHEVROTINE
+
+  // Le boulet de canon ne connaît pas la demi-part : tout ou rien.
+  const multiplicateur = exacte
+    ? MULT_COUP_DIRECT
+    : ecart === ECART_FRAPPE_A_REVERS && !boulet
+      ? MULT_FRAPPE_A_REVERS
+      : MULT_ECHEC_CUISANT
+
+  return {
+    base: Math.round(parCarte * cartes * multiplicateur),
+    bonus: Math.round(bonusPotentiel * multiplicateur),
+  }
+}
+
+/* ═══════════ Manche et totaux ═══════════ */
+
+/** Score de chaque joueur pour une manche, dans l'ordre des joueurs. */
+export function scorerManche(
+  manche: Manche,
+  systeme: Systeme,
+  options: OptionsPartie,
+): ScoreEntree[] {
+  return manche.entrees.map((entree, joueur) =>
+    scorerEntree(
+      entree,
+      manche.cartes,
+      compterAlliancesReussies(manche, joueur),
+      systeme,
+      options,
+    ),
+  )
+}
+
+/**
+ * Totaux cumulés après les manches fournies.
+ *
+ * Tout se recalcule depuis les manches : corriger une manche validée suffit à
+ * remettre d'aplomb l'ensemble du classement.
+ */
+export function totaux(
+  manches: readonly Manche[],
+  nbJoueurs: number,
+  systeme: Systeme,
+  options: OptionsPartie,
+): number[] {
+  const cumul = new Array<number>(nbJoueurs).fill(0)
+  for (const manche of manches) {
+    scorerManche(manche, systeme, options).forEach((score, joueur) => {
+      const acquis = cumul[joueur]
+      // Une manche peut compter plus d'entrées que de joueurs après correction.
+      if (acquis !== undefined) cumul[joueur] = acquis + score.total
+    })
+  }
+  return cumul
+}

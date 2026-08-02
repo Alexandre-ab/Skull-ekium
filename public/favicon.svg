@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" fill="#071722"/>
+  <g fill="#d9a23f">
+    <!-- Crâne -->
+    <path d="M256 96c-79 0-136 52-136 124 0 40 18 71 44 91 8 6 12 13 13 23l3 26c1 12 11 20 23 20h30c8 0 14-6 14-14v-22c0-6 4-10 9-10s9 4 9 10v22c0 8 6 14 14 14h30c12 0 22-8 23-20l3-26c1-10 5-17 13-23 26-20 44-51 44-91 0-72-57-124-136-124z"/>
+  </g>
+  <!-- Orbites et nez -->
+  <g fill="#071722">
+    <ellipse cx="205" cy="212" rx="38" ry="42"/>
+    <ellipse cx="307" cy="212" rx="38" ry="42"/>
+    <path d="M256 250l-20 44h40z"/>
+    <rect x="222" y="312" width="14" height="34" rx="6"/>
+    <rect x="249" y="312" width="14" height="34" rx="6"/>
+    <rect x="276" y="312" width="14" height="34" rx="6"/>
+  </g>
+  <!-- Couronne -->
+  <path d="M146 118l30-58 32 40 30-56 30 56 32-40 30 58-32 16H178z" fill="#d9a23f"/>
+</svg>
