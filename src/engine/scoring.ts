@@ -24,8 +24,10 @@ import {
   MULT_COUP_DIRECT,
   MULT_ECHEC_CUISANT,
   MULT_FRAPPE_A_REVERS,
+  CARTES_BALEINE_BLANCHE,
+  CARTES_BUTIN,
+  CARTES_KRAKEN,
   PAQUET_BASE,
-  PAQUET_EXTENSIONS,
   PENALITE_PAR_PLI_ECART,
   POINTS_PAR_CARTE_BOULET,
   POINTS_PAR_CARTE_CHEVROTINE,
@@ -35,9 +37,14 @@ import {
 
 /* ═══════════ Paquet et cartes distribuées ═══════════ */
 
-/** Nombre de cartes en jeu, selon que les extensions sont utilisées. */
-export function taillePaquet(extensions: boolean): number {
-  return extensions ? PAQUET_EXTENSIONS : PAQUET_BASE
+/** Nombre de cartes en jeu : le paquet de base plus les extensions retenues. */
+export function taillePaquet(options: OptionsPartie): number {
+  return (
+    PAQUET_BASE +
+    (options.butin ? CARTES_BUTIN : 0) +
+    (options.kraken ? CARTES_KRAKEN : 0) +
+    (options.baleineBlanche ? CARTES_BALEINE_BLANCHE : 0)
+  )
 }
 
 /**
@@ -47,8 +54,8 @@ export function taillePaquet(extensions: boolean): number {
  * lors des dernières manches », sans donner de formule ; celle-ci vient de
  * CLAUDE.md. Au moins une carte est toujours distribuée.
  */
-export function cartesMaximum(nbJoueurs: number, extensions: boolean): number {
-  return Math.max(1, Math.floor(taillePaquet(extensions) / nbJoueurs))
+export function cartesMaximum(nbJoueurs: number, options: OptionsPartie): number {
+  return Math.max(1, Math.floor(taillePaquet(options) / nbJoueurs))
 }
 
 /**
@@ -59,11 +66,11 @@ export function cartesDeLaManche(
   calendrier: readonly number[],
   indexManche: number,
   nbJoueurs: number,
-  extensions: boolean,
+  options: OptionsPartie,
 ): number {
   const prevues = calendrier[indexManche]
   if (prevues === undefined) return 0
-  return Math.min(prevues, cartesMaximum(nbJoueurs, extensions))
+  return Math.min(prevues, cartesMaximum(nbJoueurs, options))
 }
 
 /* ═══════════ Cohérence de la saisie ═══════════ */
@@ -81,6 +88,8 @@ export type CoherencePlis =
  * Plus de plis que de cartes est toujours impossible. Moins de plis est
  * légitime dans deux cas : le Kraken et la Baleine blanche détruisent des plis,
  * et à deux joueurs le fantôme de Barbe Grise en remporte sans marquer.
+ *
+ * Le Butin ne détruit rien : l'avoir en jeu ne justifie aucun pli manquant.
  */
 export function verifierPlis(
   manche: Manche,
@@ -96,7 +105,7 @@ export function verifierPlis(
   return {
     etat: "manquants",
     ecart: manche.cartes - somme,
-    tolere: options.extensions || nbJoueurs === JOUEURS_MIN,
+    tolere: options.kraken || options.baleineBlanche || nbJoueurs === JOUEURS_MIN,
   }
 }
 

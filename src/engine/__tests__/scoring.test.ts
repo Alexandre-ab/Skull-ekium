@@ -12,6 +12,9 @@ import {
   verifierPlis,
 } from "../scoring"
 import {
+  CARTES_BALEINE_BLANCHE,
+  CARTES_BUTIN,
+  CARTES_KRAKEN,
   FORMATS_MANCHES,
   PAQUET_BASE,
   PAQUET_EXTENSIONS,
@@ -39,10 +42,17 @@ function options(champs: Partial<OptionsPartie> = {}): OptionsPartie {
   return {
     bonusSiMiseExacte: false,
     bouletActif: false,
-    extensions: false,
+    butin: false,
+    kraken: false,
+    baleineBlanche: false,
     flambeurActif: false,
     ...champs,
   }
+}
+
+/** Les trois extensions ensemble — l'ancien drapeau « extensions ». */
+function toutesExtensions(champs: Partial<OptionsPartie> = {}): OptionsPartie {
+  return options({ butin: true, kraken: true, baleineBlanche: true, ...champs })
 }
 
 function manche(
@@ -469,40 +479,49 @@ describe("totaux cumulés", () => {
 /* ═══════════ Paquet et plafond de cartes ═══════════ */
 
 describe("paquet et plafond de cartes", () => {
-  it("compte 70 cartes sans extension, 74 avec", () => {
-    expect(taillePaquet(false)).toBe(PAQUET_BASE)
-    expect(taillePaquet(true)).toBe(PAQUET_EXTENSIONS)
+  it("compte 70 cartes sans extension, 74 avec les trois", () => {
+    expect(taillePaquet(options())).toBe(PAQUET_BASE)
+    expect(taillePaquet(toutesExtensions())).toBe(PAQUET_EXTENSIONS)
+  })
+
+  it("n'ajoute que les cartes des extensions retenues", () => {
+    expect(taillePaquet(options({ butin: true }))).toBe(PAQUET_BASE + CARTES_BUTIN)
+    expect(taillePaquet(options({ kraken: true }))).toBe(PAQUET_BASE + CARTES_KRAKEN)
+    expect(taillePaquet(options({ baleineBlanche: true }))).toBe(
+      PAQUET_BASE + CARTES_BALEINE_BLANCHE,
+    )
+    expect(taillePaquet(options({ kraken: true, baleineBlanche: true }))).toBe(72)
   })
 
   it("plafonne les cartes distribuées à floor(paquet / joueurs)", () => {
-    expect(cartesMaximum(2, false)).toBe(35)
-    expect(cartesMaximum(6, false)).toBe(11)
-    expect(cartesMaximum(8, false)).toBe(8)
-    expect(cartesMaximum(10, false)).toBe(7)
+    expect(cartesMaximum(2, options())).toBe(35)
+    expect(cartesMaximum(6, options())).toBe(11)
+    expect(cartesMaximum(8, options())).toBe(8)
+    expect(cartesMaximum(10, options())).toBe(7)
   })
 
   it("tient compte des cartes d'extension", () => {
-    expect(cartesMaximum(8, true)).toBe(9)
+    expect(cartesMaximum(8, toutesExtensions())).toBe(9)
   })
 
   it("distribue au moins une carte, même à dix joueurs", () => {
-    expect(cartesMaximum(10, false)).toBeGreaterThanOrEqual(1)
+    expect(cartesMaximum(10, options())).toBeGreaterThanOrEqual(1)
   })
 
   it("n'ampute pas une manche qui tient dans le paquet", () => {
     // Six joueurs : le plafond de 11 laisse les dix manches intactes.
-    expect(cartesDeLaManche(FORMATS_MANCHES.classique, 9, 6, false)).toBe(10)
+    expect(cartesDeLaManche(FORMATS_MANCHES.classique, 9, 6, options())).toBe(10)
   })
 
   it("ampute les dernières manches quand le paquet ne suit plus", () => {
     // Huit joueurs : plafond de 8, les manches 9 et 10 sont réduites.
-    expect(cartesDeLaManche(FORMATS_MANCHES.classique, 7, 8, false)).toBe(8)
-    expect(cartesDeLaManche(FORMATS_MANCHES.classique, 8, 8, false)).toBe(8)
-    expect(cartesDeLaManche(FORMATS_MANCHES.classique, 9, 8, false)).toBe(8)
+    expect(cartesDeLaManche(FORMATS_MANCHES.classique, 7, 8, options())).toBe(8)
+    expect(cartesDeLaManche(FORMATS_MANCHES.classique, 8, 8, options())).toBe(8)
+    expect(cartesDeLaManche(FORMATS_MANCHES.classique, 9, 8, options())).toBe(8)
   })
 
   it("rend zéro pour une manche hors du calendrier", () => {
-    expect(cartesDeLaManche(FORMATS_MANCHES.heureDuDodo, 1, 4, false)).toBe(0)
+    expect(cartesDeLaManche(FORMATS_MANCHES.heureDuDodo, 1, 4, options())).toBe(0)
   })
 })
 
@@ -536,12 +555,30 @@ describe("cohérence des plis", () => {
     })
   })
 
-  it("tolère des plis manquants avec les extensions : Kraken et Baleine blanche", () => {
+  it("tolère des plis manquants avec le Kraken", () => {
     const m = manche(5, trois([2, 1, 1]))
-    expect(verifierPlis(m, options({ extensions: true }), 3)).toEqual({
+    expect(verifierPlis(m, options({ kraken: true }), 3)).toEqual({
       etat: "manquants",
       ecart: 1,
       tolere: true,
+    })
+  })
+
+  it("tolère des plis manquants avec la Baleine blanche", () => {
+    const m = manche(5, trois([2, 1, 1]))
+    expect(verifierPlis(m, options({ baleineBlanche: true }), 3)).toEqual({
+      etat: "manquants",
+      ecart: 1,
+      tolere: true,
+    })
+  })
+
+  it("refuse des plis manquants avec le seul Butin : il ne détruit rien", () => {
+    const m = manche(5, trois([2, 1, 1]))
+    expect(verifierPlis(m, options({ butin: true }), 3)).toEqual({
+      etat: "manquants",
+      ecart: 1,
+      tolere: false,
     })
   })
 
@@ -557,7 +594,7 @@ describe("cohérence des plis", () => {
   it("refuse un excédent même avec les extensions", () => {
     // Aucune carte ne crée de pli supplémentaire.
     const m = manche(5, trois([3, 2, 1]))
-    expect(verifierPlis(m, options({ extensions: true }), 3)).toEqual({
+    expect(verifierPlis(m, toutesExtensions(), 3)).toEqual({
       etat: "excedentaires",
       ecart: 1,
     })

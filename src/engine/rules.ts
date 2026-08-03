@@ -18,8 +18,14 @@ export const JOUEURS_MAX = 10
 /** 56 cartes de couleur + 14 cartes spéciales. */
 export const PAQUET_BASE = 70
 
-/** Paquet de base + Butin (2), Kraken (1), Baleine blanche (1). */
-export const PAQUET_EXTENSIONS = 74
+/** Cartes ajoutées par chaque extension, choisie indépendamment des autres. */
+export const CARTES_BUTIN = 2
+export const CARTES_KRAKEN = 1
+export const CARTES_BALEINE_BLANCHE = 1
+
+/** Paquet complet : base + Butin (2) + Kraken (1) + Baleine blanche (1). */
+export const PAQUET_EXTENSIONS =
+  PAQUET_BASE + CARTES_BUTIN + CARTES_KRAKEN + CARTES_BALEINE_BLANCHE
 
 /* ═══════════ Système Skull King ═══════════ */
 

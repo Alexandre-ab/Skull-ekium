@@ -48,8 +48,18 @@ export type OptionsPartie = {
   bonusSiMiseExacte: boolean
   /** Rascal : autorise le choix boulet de canon / chevrotine. */
   bouletActif: boolean
-  /** Cartes d'extension : Butin, Kraken, Baleine blanche. */
-  extensions: boolean
+  /**
+   * Butin (2 cartes) : noue une alliance entre deux joueurs.
+   * N'entre en jeu qu'ici — le Butin ne détruit aucun pli.
+   */
+  butin: boolean
+  /** Kraken (1 carte) : le pli est détruit, personne ne le remporte. */
+  kraken: boolean
+  /**
+   * Baleine blanche (1 carte) : annule les pouvoirs, le plus fort numéro
+   * l'emporte. Sans carte numérotée dans le pli, celui-ci est détruit.
+   */
+  baleineBlanche: boolean
   /** Autorise le pari du pouvoir Rascal le Flambeur. */
   flambeurActif: boolean
 }

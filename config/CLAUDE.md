@@ -71,7 +71,9 @@ type Partie = {
   options: {
     bonusSiMiseExacte: boolean;  // variante ancienne édition
     bouletActif: boolean;        // Rascal uniquement
-    extensions: boolean;         // Butin / Kraken / Baleine blanche
+    butin: boolean;              // 2 cartes — alliances
+    kraken: boolean;             // 1 carte — le pli est détruit
+    baleineBlanche: boolean;     // 1 carte — pouvoirs annulés
     flambeurActif: boolean;
   };
   calendrier: number[];        // cartes par manche, ex. [1,2,3,4,5,6,7,8,9,10]
@@ -151,7 +153,8 @@ tourbillon : [9,7,5,3,1]
 heureDuDodo: [1]
 ```
 
-Paquet : 70 cartes de base, 74 avec les extensions.
+Paquet : 70 cartes de base. Chaque extension retenue ajoute les siennes —
+Butin 2, Kraken 1, Baleine blanche 1 — soit 74 quand les trois sont en jeu.
 Plafonner les cartes distribuées à `floor(paquet / nbJoueurs)`.
 
 ---
@@ -188,8 +191,9 @@ Déroulé d'une manche, un écran par étape :
   au classement à droite. L'utilisateur ne doit jamais se retrouver bloqué.
 - **Mini-classement toujours visible** pendant la saisie.
 - Contrôle de cohérence : la somme des plis doit égaler le nombre de cartes.
-  Exception si `extensions` est actif — le Kraken et la Baleine blanche
-  détruisent des plis, un total inférieur est alors légitime.
+  Exception si `kraken` ou `baleineBlanche` est actif — ces deux cartes
+  détruisent des plis, un total inférieur est alors légitime. Le Butin, lui,
+  n'en détruit aucun et ne justifie rien.
 - **Correction d'une manche validée** : toucher une ligne du tableau récapitulatif
   la rouvre en saisie et recalcule tous les totaux suivants. Fonctionnalité
   essentielle, c'est la demande n°1 sur les applis concurrentes.

@@ -127,7 +127,7 @@ function cartesPour(partie: Partie, indexManche: number): number {
     partie.calendrier,
     indexManche,
     partie.joueurs.length,
-    partie.options.extensions,
+    partie.options,
   )
 }
 
@@ -294,6 +294,22 @@ function reducer(etat: EtatJeu, action: Action): EtatJeu {
 
 /* ═══════════ Persistance ═══════════ */
 
+/**
+ * Rattrape les sauvegardes antérieures au choix extension par extension.
+ * Elles portent un unique `extensions: boolean` : tout ou rien, ce qui
+ * correspond aux trois cartes activées ensemble.
+ */
+function migrerOptions(options: OptionsPartie & { extensions?: boolean }): OptionsPartie {
+  if (options.butin !== undefined) return options
+  const toutes = options.extensions === true
+  return {
+    ...options,
+    butin: toutes,
+    kraken: toutes,
+    baleineBlanche: toutes,
+  }
+}
+
 function chargerEtat(): EtatJeu {
   const vide: EtatJeu = { partie: null, phase: "mises" }
   try {
@@ -302,7 +318,8 @@ function chargerEtat(): EtatJeu {
     const lu = JSON.parse(brut) as Partial<EtatJeu>
     // Une sauvegarde d'une version antérieure ne doit jamais bloquer l'appli.
     if (!lu.partie || !Array.isArray(lu.partie.joueurs)) return vide
-    return { partie: lu.partie, phase: lu.phase ?? "mises" }
+    const partie = { ...lu.partie, options: migrerOptions(lu.partie.options) }
+    return { partie, phase: lu.phase ?? "mises" }
   } catch {
     return vide
   }

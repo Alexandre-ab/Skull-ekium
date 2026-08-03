@@ -50,7 +50,7 @@ export function EcranBonus({ jeu }: { jeu: Jeu }) {
         const ouvert = ouverts.has(i)
 
         return (
-          <div key={nom} className="rounded-2xl border border-pont bg-coque">
+          <div key={nom} className="rounded-2xl carte">
             <button
               type="button"
               onClick={() => basculer(i)}
@@ -147,7 +147,7 @@ export function EcranBonus({ jeu }: { jeu: Jeu }) {
         )
       })}
 
-      {options.extensions && <BlocAlliances jeu={jeu} />}
+      {options.butin && <BlocAlliances jeu={jeu} />}
     </div>
   )
 }
@@ -172,7 +172,7 @@ function BlocAlliances({ jeu }: { jeu: Jeu }) {
   }
 
   return (
-    <section className="rounded-2xl border border-pont bg-coque p-3">
+    <section className="rounded-2xl carte p-3">
       <h3 className="text-sm font-bold text-ecume">Alliances Butin</h3>
       <p className="mt-1 mb-3 text-xs text-brume">
         20 points chacun, accordés seulement si les deux alliés tiennent leur mise.
