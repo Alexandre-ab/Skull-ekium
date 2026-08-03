@@ -92,7 +92,7 @@ export function EcranRecap({ jeu }: { jeu: Jeu }) {
             .map((joueur, rang) => (
               <li
                 key={joueur.nom}
-                className="flex items-center gap-2 rounded-xl border border-pont bg-coque px-3 py-2 text-sm"
+                className="flex items-center gap-2 rounded-xl carte px-3 py-2 text-sm"
               >
                 <span className="w-5 text-brume tabular-nums">{rang + 1}.</span>
                 <span className="min-w-0 flex-1 truncate text-ecume">{joueur.nom}</span>

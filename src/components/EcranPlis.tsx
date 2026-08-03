@@ -1,7 +1,28 @@
 /** Étape 2 — les plis remportés, avec le contrôle de cohérence. */
 
 import { Pastilles } from "./Pastilles"
+import type { Partie } from "../engine/types"
 import type { Jeu } from "../state/useGame"
+
+/**
+ * Ce qui peut légitimement avoir escamoté des plis, d'après ce qui est en jeu.
+ * Ne nomme que les cartes réellement choisies à la mise en place : suggérer le
+ * Kraken alors qu'il est resté dans la boîte enverrait vérifier la mauvaise chose.
+ */
+function responsableDesPlisPerdus(partie: Partie): string {
+  const { kraken, baleineBlanche } = partie.options
+  const coupables = [
+    ...(kraken ? ["le Kraken"] : []),
+    ...(baleineBlanche ? ["la Baleine blanche"] : []),
+  ]
+
+  if (partie.joueurs.length === 2) {
+    return coupables.length > 0
+      ? `Barbe Grise, ${coupables.join(" ou ")}, sans doute`
+      : "Barbe Grise en a sûrement profité"
+  }
+  return `${coupables.join(" ou ")}, sans doute`
+}
 
 export function EcranPlis({ jeu }: { jeu: Jeu }) {
   const { partie, cartes, coherence, scoresBrouillon } = jeu
@@ -21,7 +42,7 @@ export function EcranPlis({ jeu }: { jeu: Jeu }) {
         const mise = entree?.mise ?? 0
         const saisi = entree?.plis !== null && entree?.plis !== undefined
         return (
-          <div key={nom} className="rounded-2xl border border-pont bg-coque p-3">
+          <div key={nom} className="rounded-2xl carte p-3">
             <div className="mb-2 flex items-baseline justify-between gap-2">
               <span className="font-bold text-ecume">{nom}</span>
               <span className="text-xs text-brume">
@@ -75,10 +96,7 @@ export function EcranPlis({ jeu }: { jeu: Jeu }) {
           {coherence.etat === "manquants" && coherence.tolere && (
             <>
               {coherence.ecart} pli{coherence.ecart > 1 ? "s" : ""} non attribué
-              {coherence.ecart > 1 ? "s" : ""}
-              {partie.joueurs.length === 2
-                ? " — Barbe Grise en a sûrement profité."
-                : " — le Kraken ou la Baleine blanche, sans doute."}
+              {coherence.ecart > 1 ? "s" : ""} — {responsableDesPlisPerdus(partie)}.
             </>
           )}
         </div>

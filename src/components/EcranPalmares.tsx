@@ -73,7 +73,7 @@ export function EcranPalmares({ palmares, onFermer }: Props) {
               return (
                 <li
                   key={partie.id}
-                  className="flex items-center gap-3 rounded-2xl border border-pont bg-coque p-3"
+                  className="flex items-center gap-3 rounded-2xl carte p-3"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-bold text-ecume">
@@ -117,7 +117,7 @@ export function EcranPalmares({ palmares, onFermer }: Props) {
                 type="button"
                 onClick={() => setConfirmation({ type: "oublierJoueur", nom })}
                 aria-label={`Oublier ${nom}`}
-                className="flex min-h-11 items-center gap-2 rounded-xl border border-pont bg-coque px-3 text-sm text-ecume"
+                className="flex min-h-11 items-center gap-2 rounded-xl carte px-3 text-sm text-ecume"
               >
                 {nom}
                 <span aria-hidden="true" className="text-brume">
@@ -185,7 +185,7 @@ function LigneFiche({ rang, fiche }: { rang: number; fiche: StatsJoueur }) {
     <li
       className={[
         "rounded-2xl border p-3",
-        rang === 1 ? "border-or/60 bg-or/10" : "border-pont bg-coque",
+        rang === 1 ? "carte-or" : "carte",
       ].join(" ")}
     >
       <div className="flex items-center gap-3">

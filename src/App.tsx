@@ -69,8 +69,8 @@ function Ecrans() {
   if (vuePalmares) {
     return (
       <div className="min-h-full">
-        <header className="sticky top-0 z-30 border-b border-pont bg-abysse/95 px-4 py-3 text-center backdrop-blur">
-          <div className="text-sm font-bold text-or">Palmarès</div>
+        <header className="sticky top-0 z-30 border-b border-pont barre-voilee px-4 py-3 text-center">
+          <div className="titre-grave text-sm text-or">Palmarès</div>
           <div className="text-xs text-brume">
             {palmares.parties.length} partie{palmares.parties.length > 1 ? "s" : ""}{" "}
             archivée{palmares.parties.length > 1 ? "s" : ""}
@@ -143,7 +143,7 @@ function Ecrans() {
           onClassement={() => setVueClassement(false)}
         />
         <EcranClassement jeu={jeu} onCorriger={ouvrirCorrection} />
-        <div className="sticky bottom-0 border-t border-pont bg-abysse/95 p-3 backdrop-blur">
+        <div className="sticky bottom-0 border-t border-pont barre-voilee p-3">
           <button
             type="button"
             onClick={() => setVueClassement(false)}
@@ -185,11 +185,11 @@ function Ecrans() {
           onClassement={() => setVueClassement(true)}
         />
         <EcranClassement jeu={jeu} onCorriger={ouvrirCorrection} />
-        <div className="sticky bottom-0 border-t border-pont bg-abysse/95 p-3 backdrop-blur">
+        <div className="sticky bottom-0 border-t border-pont barre-voilee p-3">
           <button
             type="button"
             onClick={() => setConfirmation("abandonner")}
-            className="min-h-12 w-full rounded-xl bg-or font-bold text-abysse"
+            className="min-h-12 w-full rounded-xl bouton-or font-bold"
           >
             Nouvelle partie
           </button>
@@ -264,7 +264,7 @@ function Ecrans() {
         {phase === "recap" && <EcranRecap jeu={jeu} />}
       </main>
 
-      <div className="sticky bottom-0 flex gap-2 border-t border-pont bg-abysse/95 p-3 backdrop-blur">
+      <div className="sticky bottom-0 flex gap-2 border-t border-pont barre-voilee p-3">
         {phasePrecedente && (
           <button
             type="button"
@@ -278,7 +278,7 @@ function Ecrans() {
           type="button"
           disabled={!peutAvancer}
           onClick={avancer}
-          className="min-h-12 flex-1 rounded-xl bg-or font-bold text-abysse disabled:opacity-30"
+          className="min-h-12 flex-1 rounded-xl bouton-or font-bold"
         >
           {libelleAvancer}
         </button>

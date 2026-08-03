@@ -20,7 +20,7 @@ export function MiniClassement({ joueurs, totaux }: Props) {
           key={joueur.nom}
           className={[
             "flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs",
-            rang === 0 ? "border-or/60 bg-or/10" : "border-pont bg-coque",
+            rang === 0 ? "carte-or" : "carte",
           ].join(" ")}
         >
           <span className="text-brume">{rang + 1}.</span>

@@ -2,6 +2,9 @@
 
 import { useState } from "react"
 import {
+  CARTES_BALEINE_BLANCHE,
+  CARTES_BUTIN,
+  CARTES_KRAKEN,
   FORMATS_MANCHES,
   JOUEURS_MAX,
   JOUEURS_MIN,
@@ -9,7 +12,7 @@ import {
   type FormatManches,
 } from "../engine/rules"
 import { cleJoueur } from "../engine/palmares"
-import { cartesMaximum } from "../engine/scoring"
+import { cartesMaximum, taillePaquet } from "../engine/scoring"
 import type { OptionsPartie, Systeme } from "../engine/types"
 import type { ConfigNouvellePartie } from "../state/useGame"
 
@@ -27,7 +30,9 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
   const [options, setOptions] = useState<OptionsPartie>({
     bonusSiMiseExacte: false,
     bouletActif: false,
-    extensions: false,
+    butin: false,
+    kraken: false,
+    baleineBlanche: false,
     flambeurActif: false,
   })
 
@@ -35,7 +40,7 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
   const pret = nomsValides.length >= JOUEURS_MIN
 
   const calendrier = FORMATS_MANCHES[format]
-  const plafond = pret ? cartesMaximum(nomsValides.length, options.extensions) : 0
+  const plafond = pret ? cartesMaximum(nomsValides.length, options) : 0
   const ampute = pret && calendrier.some((c) => c > plafond)
 
   const basculer = (cle: keyof OptionsPartie) =>
@@ -68,7 +73,7 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
     <div className="mx-auto max-w-lg px-4 pb-32">
       <div className="flex items-start justify-between gap-3 pt-6">
         <div>
-          <h1 className="pb-1 text-2xl font-bold text-or">Skull King</h1>
+          <h1 className="titre-grave pb-1 text-3xl text-or">Skull King</h1>
           <p className="pb-6 text-sm text-brume">Journal de bord — feuille de score</p>
         </div>
         <button
@@ -101,10 +106,8 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
                   aria-pressed={embarque}
                   onClick={() => basculerJoueur(nom)}
                   className={[
-                    "min-h-11 rounded-xl border px-3 text-sm",
-                    embarque
-                      ? "border-or bg-or text-abysse font-bold"
-                      : "border-pont bg-coque text-brume",
+                    "min-h-11 rounded-xl border px-3 text-sm transition-transform active:scale-95",
+                    embarque ? "pastille-or font-bold" : "carte text-brume",
                   ].join(" ")}
                 >
                   {nom}
@@ -124,7 +127,7 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
                 }
                 placeholder={`Pirate ${i + 1}`}
                 aria-label={`Nom du joueur ${i + 1}`}
-                className="min-h-11 flex-1 rounded-xl border border-pont bg-coque px-3 text-ecume placeholder:text-brume/60"
+                className="min-h-11 flex-1 rounded-xl carte px-3 text-ecume placeholder:text-brume/60"
               />
               {noms.length > JOUEURS_MIN && (
                 <button
@@ -188,7 +191,7 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
           value={format}
           onChange={(e) => setFormat(e.target.value as FormatManches)}
           aria-label="Format de manches"
-          className="min-h-11 w-full rounded-xl border border-pont bg-coque px-3 text-ecume"
+          className="min-h-11 w-full rounded-xl carte px-3 text-ecume"
         >
           {Object.entries(LIBELLES_FORMATS).map(([id, libelle]) => (
             <option key={id} value={id}>
@@ -208,6 +211,49 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
         )}
       </section>
 
+      {/* ── Extensions ── */}
+      <section aria-labelledby="titre-extensions" className="mb-6">
+        <h2 id="titre-extensions" className="mb-1 text-sm font-bold text-ecume">
+          Cartes d'extension
+        </h2>
+        <p className="mb-2 text-xs text-brume">
+          Chacune se glisse dans le paquet indépendamment des autres — prenez
+          celles que vous avez sorties de la boîte.
+        </p>
+        <div className="space-y-2">
+          {(
+            [
+              [
+                "butin",
+                "Butin",
+                `${CARTES_BUTIN} cartes · alliance entre deux joueurs, 20 points si les deux tiennent leur mise`,
+              ],
+              [
+                "kraken",
+                "Kraken",
+                `${CARTES_KRAKEN} carte · le pli est détruit, personne ne le remporte`,
+              ],
+              [
+                "baleineBlanche",
+                "Baleine blanche",
+                `${CARTES_BALEINE_BLANCHE} carte · les pouvoirs sont annulés, le plus fort numéro l'emporte`,
+              ],
+            ] as const
+          ).map(([cle, titre, detail]) => (
+            <Bascule
+              key={cle}
+              actif={options[cle]}
+              titre={titre}
+              detail={detail}
+              onBasculer={() => basculer(cle)}
+            />
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-brume">
+          Paquet : <span className="tabular-nums">{taillePaquet(options)}</span> cartes
+        </p>
+      </section>
+
       {/* ── Options ── */}
       <section aria-labelledby="titre-options" className="mb-6">
         <h2 id="titre-options" className="mb-2 text-sm font-bold text-ecume">
@@ -216,7 +262,6 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
         <div className="space-y-2">
           {(
             [
-              ["extensions", "Extensions", "Butin, Kraken, Baleine blanche"],
               [
                 "bonusSiMiseExacte",
                 "Bonus si mise exacte",
@@ -228,43 +273,25 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
                 : []),
             ] as const
           ).map(([cle, titre, detail]) => (
-            <button
+            <Bascule
               key={cle}
-              type="button"
-              role="switch"
-              aria-checked={options[cle]}
-              onClick={() => basculer(cle)}
-              className={[
-                "flex min-h-11 w-full items-center gap-3 rounded-xl border p-3 text-left",
-                options[cle] ? "border-or bg-or/10" : "border-pont bg-coque",
-              ].join(" ")}
-            >
-              <span
-                aria-hidden="true"
-                className={[
-                  "grid h-6 w-6 shrink-0 place-items-center rounded-md border",
-                  options[cle] ? "border-or bg-or text-abysse" : "border-pont",
-                ].join(" ")}
-              >
-                {options[cle] ? "✓" : ""}
-              </span>
-              <span className="min-w-0">
-                <span className="block text-sm text-ecume">{titre}</span>
-                <span className="block text-xs text-brume">{detail}</span>
-              </span>
-            </button>
+              actif={options[cle]}
+              titre={titre}
+              detail={detail}
+              onBasculer={() => basculer(cle)}
+            />
           ))}
         </div>
       </section>
 
       {/* ── Départ ── */}
-      <div className="fixed inset-x-0 bottom-0 border-t border-pont bg-abysse/95 p-4 backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 border-t border-pont barre-voilee p-4">
         <div className="mx-auto max-w-lg">
           <button
             type="button"
             disabled={!pret}
             onClick={demarrer}
-            className="min-h-14 w-full rounded-2xl bg-or text-lg font-bold text-abysse disabled:opacity-30"
+            className="min-h-14 w-full rounded-2xl bouton-or text-lg font-bold"
           >
             Larguer les amarres
           </button>
@@ -276,5 +303,43 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
         </div>
       </div>
     </div>
+  )
+}
+
+/* ═══════════ Interrupteur d'option ═══════════ */
+
+type BasculeProps = {
+  actif: boolean
+  titre: string
+  detail: string
+  onBasculer: () => void
+}
+
+function Bascule({ actif, titre, detail, onBasculer }: BasculeProps) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={actif}
+      onClick={onBasculer}
+      className={[
+        "flex min-h-11 w-full items-center gap-3 rounded-xl border p-3 text-left",
+        actif ? "border-or bg-or/10" : "border-pont bg-coque",
+      ].join(" ")}
+    >
+      <span
+        aria-hidden="true"
+        className={[
+          "grid h-6 w-6 shrink-0 place-items-center rounded-md border",
+          actif ? "border-or bg-or text-abysse" : "border-pont",
+        ].join(" ")}
+      >
+        {actif ? "✓" : ""}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm text-ecume">{titre}</span>
+        <span className="block text-xs text-brume">{detail}</span>
+      </span>
+    </button>
   )
 }

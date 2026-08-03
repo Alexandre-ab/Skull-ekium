@@ -20,10 +20,14 @@ export function EcranClassement({ jeu, onCorriger }: Props) {
     <div className="pb-6">
       <div className="px-3 pt-3">
         {terminee && (
-          <div className="mb-4 rounded-2xl border border-or bg-or/10 p-4 text-center">
-            <div className="text-xs text-brume">Capitaine des Sept Mers</div>
-            <div className="text-xl font-bold text-or">{ordre[0]?.nom}</div>
-            <div className="text-sm text-ecume tabular-nums">{ordre[0]?.score} points</div>
+          <div className="mb-4 rounded-2xl carte-or p-5 text-center">
+            <div className="text-[0.7rem] tracking-[0.2em] text-brume uppercase">
+              Capitaine des Sept Mers
+            </div>
+            <div className="titre-grave mt-1 text-2xl text-or">{ordre[0]?.nom}</div>
+            <div className="mt-1 text-sm text-ecume tabular-nums">
+              {ordre[0]?.score} points
+            </div>
           </div>
         )}
 
@@ -63,7 +67,7 @@ function LigneClassement({ rang, nom, score, coule = false }: LigneProps) {
     <li
       className={[
         "flex items-center gap-3 rounded-2xl border p-3",
-        rang === 1 && !coule ? "border-or/60 bg-or/10" : "border-pont bg-coque",
+        rang === 1 && !coule ? "carte-or" : "carte",
       ].join(" ")}
     >
       <span className="w-6 text-center text-sm text-brume tabular-nums">{rang}</span>

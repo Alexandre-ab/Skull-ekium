@@ -12,7 +12,7 @@ type Props = {
 
 export function BarreSuperieure({ titre, sousTitre, onMenu, onClassement }: Props) {
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-pont bg-abysse/95 px-2 py-2 backdrop-blur">
+    <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-pont barre-voilee px-2 py-2">
       <button
         type="button"
         onClick={onMenu}
@@ -27,7 +27,7 @@ export function BarreSuperieure({ titre, sousTitre, onMenu, onClassement }: Prop
       </button>
 
       <div className="min-w-0 flex-1 text-center">
-        <div className="truncate text-sm font-bold text-ecume">{titre}</div>
+        <div className="titre-grave truncate text-sm text-ecume">{titre}</div>
         {sousTitre && <div className="truncate text-xs text-brume">{sousTitre}</div>}
       </div>
 

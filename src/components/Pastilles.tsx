@@ -16,10 +16,7 @@ type Props = {
 
 export function Pastilles({ max, valeur, onChoisir, etiquette, ton = "or" }: Props) {
   const choix = Array.from({ length: max + 1 }, (_, i) => i)
-  const actif =
-    ton === "or"
-      ? "bg-or text-abysse border-or font-bold"
-      : "bg-cordage text-ecume border-cordage font-bold"
+  const actif = ton === "or" ? "pastille-or" : "pastille-cordage"
 
   return (
     <div role="group" aria-label={etiquette} className="flex flex-wrap gap-1.5">
@@ -33,10 +30,12 @@ export function Pastilles({ max, valeur, onChoisir, etiquette, ton = "or" }: Pro
             aria-label={`${etiquette} : ${n}`}
             onClick={() => onChoisir(n)}
             className={[
-              "min-h-11 min-w-11 rounded-xl border text-base tabular-nums transition-colors",
+              "min-h-11 min-w-11 rounded-xl border text-base tabular-nums",
+              "transition-[transform,background-color,border-color,color] duration-150",
+              "active:scale-95",
               choisi
-                ? actif
-                : "border-pont bg-coque text-brume hover:border-cordage hover:text-ecume",
+                ? `${actif} font-bold`
+                : "carte text-brume hover:border-cordage hover:text-ecume",
             ].join(" ")}
           >
             {n}

@@ -37,7 +37,7 @@ export function Menu({
         className="relative flex h-full w-72 max-w-[85%] flex-col border-r border-pont bg-coque"
       >
         <div className="border-b border-pont p-4">
-          <div className="text-sm font-bold text-or">Skull King</div>
+          <div className="titre-grave text-sm text-or">Skull King</div>
           <div className="text-xs text-brume">
             {partie.joueurs.length} joueurs ·{" "}
             {partie.systeme === "skullking" ? "Skull King" : "Rascal"}

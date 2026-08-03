@@ -19,7 +19,7 @@ export function EcranMises({ jeu }: { jeu: Jeu }) {
       </p>
 
       {partie.joueurs.map((nom, i) => (
-        <div key={nom} className="rounded-2xl border border-pont bg-coque p-3">
+        <div key={nom} className="rounded-2xl carte p-3">
           <div className="mb-2 flex items-baseline justify-between">
             <span className="font-bold text-ecume">{nom}</span>
             <span className="text-xs text-brume">

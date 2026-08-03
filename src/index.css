@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+/*
+ * Cinzel, capitales gravées — le ton des cartes marines et des frontons.
+ * Auto-hébergée : un CDN laisserait l'appli nue en mode avion, et le fichier
+ * est précaché par le service worker (globPatterns inclut woff2).
+ * Fichier variable, un seul téléchargement couvre les graisses 500 à 700.
+ * SIL Open Font License 1.1 — voir public/fonts/Cinzel-OFL.txt.
+ */
+@font-face {
+  font-family: "Cinzel";
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url("/fonts/cinzel-latin.woff2") format("woff2");
+  /* Sous-ensemble latin : couvre tous les accents du français. */
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+20AC, U+2122, U+2212, U+FEFF, U+FFFD;
+}
+
 @theme {
   /* Palette : une nuit en mer. */
   --color-abysse: #071722;
@@ -12,7 +30,12 @@
   --color-tribord: #4fc3a6;
   --color-babord: #d45b44;
 
+  /* Reflets de l'or : hauts et bas des dégradés de laiton. */
+  --color-or-clair: #f2cd83;
+  --color-or-sombre: #a9761f;
+
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-titre: "Cinzel", ui-serif, Georgia, serif;
 }
 
 :root {
@@ -26,7 +49,24 @@ body,
 }
 
 body {
+  /*
+   * Deux halos : la lune au-dessus de l'horizon, un reflet dans les fonds.
+   * Peints sur le body, qui ne défile pas — le décor reste immobile pendant
+   * qu'on fait défiler la feuille de score.
+   */
   background-color: var(--color-abysse);
+  background-image:
+    radial-gradient(
+      125% 58% at 50% -14%,
+      color-mix(in oklab, var(--color-cordage) 55%, transparent) 0%,
+      transparent 64%
+    ),
+    radial-gradient(
+      95% 48% at 108% 110%,
+      color-mix(in oklab, var(--color-cordage) 38%, transparent) 0%,
+      transparent 62%
+    );
+  background-repeat: no-repeat;
   color: var(--color-ecume);
   /* Encoche iPhone : l'appli occupe tout l'écran sans passer sous la barre. */
   padding-bottom: env(safe-area-inset-bottom);
@@ -38,6 +78,116 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-or);
   outline-offset: 2px;
+}
+
+@layer components {
+  /*
+   * Surface de panneau : bois verni du pont. Un filet clair sur l'arête haute
+   * capte la lumière, l'ombre portée décolle la carte du fond.
+   */
+  .carte {
+    background-image: linear-gradient(
+      180deg,
+      rgb(255 255 255 / 5%) 0%,
+      rgb(255 255 255 / 0%) 42%
+    );
+    background-color: var(--color-coque);
+    border: 1px solid var(--color-pont);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 6%),
+      0 10px 24px -16px rgb(0 0 0 / 85%);
+  }
+
+  /* Carte mise en avant : la même, cerclée d'or. */
+  .carte-or {
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--color-or) 16%, transparent) 0%,
+      rgb(255 255 255 / 0%) 55%
+    );
+    background-color: var(--color-coque);
+    border: 1px solid color-mix(in oklab, var(--color-or) 55%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--color-or) 30%, transparent),
+      0 14px 30px -18px color-mix(in oklab, var(--color-or) 70%, transparent);
+  }
+
+  /*
+   * Bouton principal : laiton poli. Le dégradé et le liseré interne donnent
+   * le relief ; l'enfoncement au toucher confirme l'appui sans animation,
+   * ce qui reste lisible même en mouvement réduit.
+   */
+  .bouton-or {
+    background-image: linear-gradient(
+      180deg,
+      var(--color-or-clair) 0%,
+      var(--color-or) 52%,
+      var(--color-or-sombre) 100%
+    );
+    color: var(--color-abysse);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 45%),
+      0 12px 26px -14px color-mix(in oklab, var(--color-or) 85%, transparent);
+    transition: transform 120ms ease;
+  }
+
+  .bouton-or:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  /*
+   * Désactivé : franchement éteint, pas un laiton terni. Un bouton d'or à
+   * 30 % d'opacité tourne au brun boueux et on ne sait plus s'il est cliquable.
+   */
+  .bouton-or:disabled {
+    background-image: none;
+    background-color: var(--color-pont);
+    color: var(--color-brume);
+    box-shadow: none;
+  }
+
+  /* Pastille choisie : même laiton, en plus petit. */
+  .pastille-or {
+    background-image: linear-gradient(
+      180deg,
+      var(--color-or-clair) 0%,
+      var(--color-or) 60%,
+      var(--color-or-sombre) 100%
+    );
+    color: var(--color-abysse);
+    border-color: var(--color-or-sombre);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 45%),
+      0 6px 14px -8px color-mix(in oklab, var(--color-or) 80%, transparent);
+  }
+
+  /* Pastille choisie côté plis : cordage, pour ne pas confondre avec la mise. */
+  .pastille-cordage {
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--color-cordage) 70%, white) 0%,
+      var(--color-cordage) 60%,
+      color-mix(in oklab, var(--color-cordage) 75%, black) 100%
+    );
+    color: var(--color-ecume);
+    border-color: color-mix(in oklab, var(--color-cordage) 70%, black);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 22%),
+      0 6px 14px -8px color-mix(in oklab, var(--color-cordage) 90%, transparent);
+  }
+
+  /* Titres gravés : Cinzel n'existe qu'en capitales, l'interlettrage l'aère. */
+  .titre-grave {
+    font-family: var(--font-titre);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  /* Barres collantes : le contenu doit s'estomper dessous, pas s'y cogner. */
+  .barre-voilee {
+    background-color: color-mix(in oklab, var(--color-abysse) 88%, transparent);
+    backdrop-filter: blur(12px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
