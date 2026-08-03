@@ -40,6 +40,12 @@ export type Manche = {
   entrees: Entree[]
   /** Alliances Butin nouées pendant la manche. */
   alliances: Alliance[]
+  /**
+   * Plis dévorés par le Kraken ou la Baleine blanche : détruits, donc
+   * attribués à personne. Déclarés explicitement pour que l'appli sache
+   * combien de plis restent réellement à répartir.
+   */
+  plisDetruits: number
 }
 
 /** Options de partie, choisies à la mise en place. */

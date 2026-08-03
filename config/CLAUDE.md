@@ -51,6 +51,7 @@ type Manche = {
   cartes: number;              // cartes distribuées cette manche
   entrees: Entree[];           // une par joueur, même ordre que players[]
   alliances: [number, number][]; // paires d'indices de joueurs (Butin)
+  plisDetruits: number;        // plis dévorés par le Kraken / la Baleine
 };
 
 type Entree = {
@@ -190,10 +191,11 @@ Déroulé d'une manche, un écran par étape :
 - **Barre supérieure permanente** sur tous les écrans : accès au menu à gauche,
   au classement à droite. L'utilisateur ne doit jamais se retrouver bloqué.
 - **Mini-classement toujours visible** pendant la saisie.
-- Contrôle de cohérence : la somme des plis doit égaler le nombre de cartes.
-  Exception si `kraken` ou `baleineBlanche` est actif — ces deux cartes
-  détruisent des plis, un total inférieur est alors légitime. Le Butin, lui,
-  n'en détruit aucun et ne justifie rien.
+- Contrôle de cohérence : la somme des plis doit égaler `cartes - plisDetruits`.
+  Les plis dévorés par le Kraken ou la Baleine blanche se **déclarent** à
+  l'étape Plis, ils ne se devinent pas : le compte reste ainsi vérifiable au
+  pli près, et l'auto-complétion des plis forcés reste juste. Seule exception,
+  à deux joueurs : Barbe Grise remporte des plis sans marquer.
 - **Correction d'une manche validée** : toucher une ligne du tableau récapitulatif
   la rouvre en saisie et recalcule tous les totaux suivants. Fonctionnalité
   essentielle, c'est la demande n°1 sur les applis concurrentes.

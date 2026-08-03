@@ -14,7 +14,13 @@ import type {
   Partie,
   Systeme,
 } from "../engine/types"
-import { cartesDeLaManche, scorerManche, totaux, verifierPlis } from "../engine/scoring"
+import {
+  cartesDeLaManche,
+  plisADistribuer,
+  scorerManche,
+  totaux,
+  verifierPlis,
+} from "../engine/scoring"
 import { FORMATS_MANCHES, type FormatManches } from "../engine/rules"
 
 const CLE_SAUVEGARDE = "skullking:partie"
@@ -57,6 +63,7 @@ type Action =
   | { type: "nouvellePartie"; config: ConfigNouvellePartie }
   | { type: "mise"; joueur: number; valeur: number | null }
   | { type: "plis"; joueur: number; valeur: number | null }
+  | { type: "plisDetruits"; valeur: number }
   | { type: "bonus"; joueur: number; champ: ChampBonus; valeur: number | boolean }
   | { type: "allianceAjouter"; paire: Alliance }
   | { type: "allianceRetirer"; index: number }
@@ -88,6 +95,7 @@ function mancheVierge(nbJoueurs: number, cartes: number): Manche {
     cartes,
     entrees: Array.from({ length: nbJoueurs }, entreeVierge),
     alliances: [],
+    plisDetruits: 0,
   }
 }
 
@@ -98,15 +106,17 @@ function mancheVierge(nbJoueurs: number, cartes: number): Manche {
  * - Un seul joueur reste à saisir : il a forcément tous les plis restants.
  * - Il ne reste aucun pli à distribuer : les joueurs restants sont tous à 0.
  *
- * La valeur posée reste modifiable : avec les extensions, le Kraken ou la
- * Baleine blanche peuvent avoir détruit des plis.
+ * Les plis dévorés par le Kraken sont retirés du compte avant de conclure :
+ * sans cela, le dernier joueur hériterait d'un pli que personne n'a remporté.
  */
 function completerPlisForces(partie: Partie): Partie {
-  const { entrees, cartes } = partie.brouillon
+  const { entrees } = partie.brouillon
   const manquants = entrees.filter((e) => e.plis === null).length
   if (manquants === 0) return partie
 
-  const restant = cartes - entrees.reduce((somme, e) => somme + (e.plis ?? 0), 0)
+  const restant =
+    plisADistribuer(partie.brouillon) -
+    entrees.reduce((somme, e) => somme + (e.plis ?? 0), 0)
   if (restant < 0) return partie
   if (manquants > 1 && restant !== 0) return partie
 
@@ -176,6 +186,32 @@ function reducer(etat: EtatJeu, action: Action): EtatJeu {
       const suivant = modifierEntree(action.joueur, (e) => ({ ...e, plis: action.valeur }))
       if (!suivant.partie) return suivant
       return { ...suivant, partie: completerPlisForces(suivant.partie) }
+    }
+
+    case "plisDetruits": {
+      /*
+       * Déclarer un pli dévoré après coup change le compte attendu : les plis
+       * déjà saisis pourraient dépasser. On les efface plutôt que de laisser
+       * un total faux passer inaperçu — c'est deux touchers à refaire, contre
+       * une manche mal comptée.
+       */
+      const trop =
+        partie.brouillon.entrees.reduce((somme, e) => somme + (e.plis ?? 0), 0) >
+        Math.max(0, partie.brouillon.cartes - action.valeur)
+
+      return {
+        ...etat,
+        partie: {
+          ...partie,
+          brouillon: {
+            ...partie.brouillon,
+            plisDetruits: action.valeur,
+            entrees: trop
+              ? partie.brouillon.entrees.map((e) => ({ ...e, plis: null }))
+              : partie.brouillon.entrees,
+          },
+        },
+      }
     }
 
     case "bonus":
@@ -310,6 +346,14 @@ function migrerOptions(options: OptionsPartie & { extensions?: boolean }): Optio
   }
 }
 
+/**
+ * Rattrape les manches antérieures à la déclaration des plis dévorés.
+ * Elles n'en comptent aucun : leurs totaux restent ceux qui ont été validés.
+ */
+function migrerManche(manche: Manche): Manche {
+  return manche.plisDetruits === undefined ? { ...manche, plisDetruits: 0 } : manche
+}
+
 function chargerEtat(): EtatJeu {
   const vide: EtatJeu = { partie: null, phase: "mises" }
   try {
@@ -318,7 +362,12 @@ function chargerEtat(): EtatJeu {
     const lu = JSON.parse(brut) as Partial<EtatJeu>
     // Une sauvegarde d'une version antérieure ne doit jamais bloquer l'appli.
     if (!lu.partie || !Array.isArray(lu.partie.joueurs)) return vide
-    const partie = { ...lu.partie, options: migrerOptions(lu.partie.options) }
+    const partie: Partie = {
+      ...lu.partie,
+      options: migrerOptions(lu.partie.options),
+      manches: lu.partie.manches.map(migrerManche),
+      brouillon: migrerManche(lu.partie.brouillon),
+    }
     return { partie, phase: lu.phase ?? "mises" }
   } catch {
     return vide
@@ -375,7 +424,7 @@ export function useGame() {
   /** Cohérence entre les plis saisis et les cartes distribuées. */
   const coherence = useMemo(() => {
     if (!partie) return null
-    return verifierPlis(partie.brouillon, partie.options, partie.joueurs.length)
+    return verifierPlis(partie.brouillon, partie.joueurs.length)
   }, [partie])
 
   const actions = useMemo(
@@ -386,6 +435,7 @@ export function useGame() {
         envoyer({ type: "mise", joueur, valeur }),
       definirPlis: (joueur: number, valeur: number | null) =>
         envoyer({ type: "plis", joueur, valeur }),
+      definirPlisDetruits: (valeur: number) => envoyer({ type: "plisDetruits", valeur }),
       definirBonus: (joueur: number, champ: ChampBonus, valeur: number | boolean) =>
         envoyer({ type: "bonus", joueur, champ, valeur }),
       ajouterAlliance: (paire: Alliance) => envoyer({ type: "allianceAjouter", paire }),

@@ -83,29 +83,36 @@ export type CoherencePlis =
   | { etat: "excedentaires"; ecart: number }
 
 /**
- * Confronte la somme des plis saisis au nombre de cartes de la manche.
- *
- * Plus de plis que de cartes est toujours impossible. Moins de plis est
- * légitime dans deux cas : le Kraken et la Baleine blanche détruisent des plis,
- * et à deux joueurs le fantôme de Barbe Grise en remporte sans marquer.
- *
- * Le Butin ne détruit rien : l'avoir en jeu ne justifie aucun pli manquant.
+ * Plis restant à répartir entre les joueurs : les cartes de la manche, moins
+ * ceux que le Kraken ou la Baleine blanche ont dévorés.
  */
-export function verifierPlis(
-  manche: Manche,
-  options: OptionsPartie,
-  nbJoueurs: number,
-): CoherencePlis {
+export function plisADistribuer(manche: Manche): number {
+  return Math.max(0, manche.cartes - (manche.plisDetruits || 0))
+}
+
+/**
+ * Confronte la somme des plis saisis aux plis réellement à répartir.
+ *
+ * Plus de plis qu'il n'en reste est toujours impossible. Moins est légitime
+ * dans un seul cas : à deux joueurs, le fantôme de Barbe Grise en remporte
+ * sans marquer.
+ *
+ * Les plis dévorés ne sont plus devinés — ils se déclarent. Une manche où le
+ * Kraken est passé se vérifie donc aussi précisément qu'une autre, au lieu de
+ * laisser filer n'importe quelle erreur de saisie.
+ */
+export function verifierPlis(manche: Manche, nbJoueurs: number): CoherencePlis {
   if (manche.entrees.some((e) => e.plis === null)) return { etat: "incomplet" }
 
+  const attendus = plisADistribuer(manche)
   const somme = manche.entrees.reduce((total, e) => total + (e.plis ?? 0), 0)
-  if (somme === manche.cartes) return { etat: "exact" }
-  if (somme > manche.cartes) return { etat: "excedentaires", ecart: somme - manche.cartes }
+  if (somme === attendus) return { etat: "exact" }
+  if (somme > attendus) return { etat: "excedentaires", ecart: somme - attendus }
 
   return {
     etat: "manquants",
-    ecart: manche.cartes - somme,
-    tolere: options.kraken || options.baleineBlanche || nbJoueurs === JOUEURS_MIN,
+    ecart: attendus - somme,
+    tolere: nbJoueurs === JOUEURS_MIN,
   }
 }
 

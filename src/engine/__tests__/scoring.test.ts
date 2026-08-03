@@ -5,6 +5,7 @@ import {
   cartesDeLaManche,
   cartesMaximum,
   compterAlliancesReussies,
+  plisADistribuer,
   scorerEntree,
   scorerManche,
   taillePaquet,
@@ -59,8 +60,9 @@ function manche(
   cartes: number,
   entrees: Entree[],
   alliances: Alliance[] = [],
+  plisDetruits = 0,
 ): Manche {
-  return { cartes, entrees, alliances }
+  return { cartes, entrees, alliances, plisDetruits }
 }
 
 /** Raccourci : score total d'une entrée isolée, sans alliance. */
@@ -532,50 +534,43 @@ describe("cohérence des plis", () => {
     plis.map((p) => entree({ mise: 0, plis: p }))
 
   it("signale une saisie incomplète", () => {
-    const m = manche(5, trois([2, null, 1]))
-    expect(verifierPlis(m, options(), 3)).toEqual({ etat: "incomplet" })
+    expect(verifierPlis(manche(5, trois([2, null, 1])), 3)).toEqual({ etat: "incomplet" })
   })
 
   it("valide une somme égale au nombre de cartes", () => {
-    const m = manche(5, trois([2, 2, 1]))
-    expect(verifierPlis(m, options(), 3)).toEqual({ etat: "exact" })
+    expect(verifierPlis(manche(5, trois([2, 2, 1])), 3)).toEqual({ etat: "exact" })
   })
 
   it("refuse toujours plus de plis que de cartes", () => {
-    const m = manche(5, trois([3, 2, 1]))
-    expect(verifierPlis(m, options(), 3)).toEqual({ etat: "excedentaires", ecart: 1 })
+    expect(verifierPlis(manche(5, trois([3, 2, 1])), 3)).toEqual({
+      etat: "excedentaires",
+      ecart: 1,
+    })
   })
 
-  it("refuse des plis manquants en partie standard", () => {
-    const m = manche(5, trois([2, 1, 1]))
-    expect(verifierPlis(m, options(), 3)).toEqual({
+  it("refuse des plis manquants tant qu'aucun n'est déclaré dévoré", () => {
+    expect(verifierPlis(manche(5, trois([2, 1, 1])), 3)).toEqual({
       etat: "manquants",
       ecart: 1,
       tolere: false,
     })
   })
 
-  it("tolère des plis manquants avec le Kraken", () => {
-    const m = manche(5, trois([2, 1, 1]))
-    expect(verifierPlis(m, options({ kraken: true }), 3)).toEqual({
-      etat: "manquants",
+  it("valide le compte quand le pli manquant est déclaré dévoré", () => {
+    expect(verifierPlis(manche(5, trois([2, 1, 1]), [], 1), 3)).toEqual({ etat: "exact" })
+  })
+
+  it("refuse un excédent par rapport aux plis restants après un pli dévoré", () => {
+    // 5 cartes, 1 pli dévoré : il n'en reste que 4 à répartir.
+    expect(verifierPlis(manche(5, trois([2, 2, 1]), [], 1), 3)).toEqual({
+      etat: "excedentaires",
       ecart: 1,
-      tolere: true,
     })
   })
 
-  it("tolère des plis manquants avec la Baleine blanche", () => {
-    const m = manche(5, trois([2, 1, 1]))
-    expect(verifierPlis(m, options({ baleineBlanche: true }), 3)).toEqual({
-      etat: "manquants",
-      ecart: 1,
-      tolere: true,
-    })
-  })
-
-  it("refuse des plis manquants avec le seul Butin : il ne détruit rien", () => {
-    const m = manche(5, trois([2, 1, 1]))
-    expect(verifierPlis(m, options({ butin: true }), 3)).toEqual({
+  it("compte encore les plis manquants au-delà de ceux déclarés dévorés", () => {
+    // 5 cartes, 1 dévoré, 4 attendus, 3 saisis.
+    expect(verifierPlis(manche(5, trois([2, 1, 0]), [], 1), 3)).toEqual({
       etat: "manquants",
       ecart: 1,
       tolere: false,
@@ -584,20 +579,25 @@ describe("cohérence des plis", () => {
 
   it("tolère des plis manquants à deux joueurs : Barbe Grise en remporte sans marquer", () => {
     const m = manche(5, [entree({ mise: 0, plis: 2 }), entree({ mise: 0, plis: 1 })])
-    expect(verifierPlis(m, options(), 2)).toEqual({
-      etat: "manquants",
-      ecart: 2,
-      tolere: true,
-    })
+    expect(verifierPlis(m, 2)).toEqual({ etat: "manquants", ecart: 2, tolere: true })
+  })
+})
+
+/* ═══════════ Plis à répartir ═══════════ */
+
+describe("plis à distribuer", () => {
+  const vide = (n: number) => Array.from({ length: n }, () => entree())
+
+  it("rend toutes les cartes quand rien n'est dévoré", () => {
+    expect(plisADistribuer(manche(7, vide(3)))).toBe(7)
   })
 
-  it("refuse un excédent même avec les extensions", () => {
-    // Aucune carte ne crée de pli supplémentaire.
-    const m = manche(5, trois([3, 2, 1]))
-    expect(verifierPlis(m, toutesExtensions(), 3)).toEqual({
-      etat: "excedentaires",
-      ecart: 1,
-    })
+  it("retire les plis dévorés", () => {
+    expect(plisADistribuer(manche(7, vide(3), [], 2))).toBe(5)
+  })
+
+  it("ne descend jamais sous zéro", () => {
+    expect(plisADistribuer(manche(1, vide(3), [], 2))).toBe(0)
   })
 })
 
