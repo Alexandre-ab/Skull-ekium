@@ -14,6 +14,7 @@ import {
 } from "../scoring"
 import {
   CARTES_BALEINE_BLANCHE,
+  calendrierDe,
   CARTES_BUTIN,
   CARTES_KRAKEN,
   FORMATS_MANCHES,
@@ -619,5 +620,32 @@ describe("formats de manches", () => {
       expect(calendrier.length).toBeGreaterThan(0)
       for (const cartes of calendrier) expect(cartes).toBeGreaterThanOrEqual(1)
     }
+  })
+})
+
+/* ═══════════ Longueur de partie ═══════════ */
+
+describe("calendrier d'une partie écourtée", () => {
+  it("rend le format entier quand on demande toutes les manches", () => {
+    expect(calendrierDe("classique", 10)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  })
+
+  it("coupe la fin, pas le début : les manches courtes mettent en jambes", () => {
+    expect(calendrierDe("classique", 6)).toEqual([1, 2, 3, 4, 5, 6])
+  })
+
+  it("s'applique à n'importe quel format", () => {
+    expect(calendrierDe("tourbillon", 3)).toEqual([9, 7, 5])
+    expect(calendrierDe("pretAuCombat", 2)).toEqual([6, 7])
+  })
+
+  it("ne dépasse jamais la longueur du format", () => {
+    expect(calendrierDe("pasDImpair", 99)).toEqual([2, 4, 6, 8, 10])
+    expect(calendrierDe("heureDuDodo", 5)).toEqual([1])
+  })
+
+  it("garde toujours au moins une manche", () => {
+    expect(calendrierDe("classique", 0)).toEqual([1])
+    expect(calendrierDe("classique", -3)).toEqual([1])
   })
 })

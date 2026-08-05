@@ -6,11 +6,13 @@ import {
   CARTES_BUTIN,
   CARTES_KRAKEN,
   FORMATS_MANCHES,
+  calendrierDe,
   JOUEURS_MAX,
   JOUEURS_MIN,
   LIBELLES_FORMATS,
   type FormatManches,
 } from "../engine/rules"
+import { Pastilles } from "./Pastilles"
 import { cleJoueur } from "../engine/palmares"
 import { cartesMaximum, taillePaquet } from "../engine/scoring"
 import type { OptionsPartie, Systeme } from "../engine/types"
@@ -36,10 +38,16 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
     flambeurActif: false,
   })
 
+  // La longueur du format sert de valeur de départ ; `null` tant que le joueur
+  // n'a rien choisi, pour qu'un changement de format ne garde pas un vieux compte.
+  const [nbManchesChoisi, setNbManchesChoisi] = useState<number | null>(null)
+
   const nomsValides = noms.map((n) => n.trim()).filter(Boolean)
   const pret = nomsValides.length >= JOUEURS_MIN
 
-  const calendrier = FORMATS_MANCHES[format]
+  const manchesMax = FORMATS_MANCHES[format].length
+  const nbManches = Math.min(nbManchesChoisi ?? manchesMax, manchesMax)
+  const calendrier = calendrierDe(format, nbManches)
   const plafond = pret ? cartesMaximum(nomsValides.length, options) : 0
   const ampute = pret && calendrier.some((c) => c > plafond)
 
@@ -66,7 +74,7 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
 
   // Les cases laissées vides ne créent pas de joueur fantôme.
   const demarrer = () => {
-    if (pret) onDemarrer({ joueurs: nomsValides, systeme, options, format })
+    if (pret) onDemarrer({ joueurs: nomsValides, systeme, options, format, nbManches })
   }
 
   return (
@@ -189,7 +197,12 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
         </h2>
         <select
           value={format}
-          onChange={(e) => setFormat(e.target.value as FormatManches)}
+          onChange={(e) => {
+            setFormat(e.target.value as FormatManches)
+            // Repartir de la longueur du nouveau format plutôt que de garder
+            // un compte hérité du précédent, qui n'aurait plus de sens.
+            setNbManchesChoisi(null)
+          }}
           aria-label="Format de manches"
           className="min-h-11 w-full rounded-xl carte px-3 text-ecume"
         >
@@ -199,6 +212,33 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
             </option>
           ))}
         </select>
+
+        {/* Rien n'oblige à jouer le format en entier : une tablée pressée
+            s'arrête plus tôt, et le classement se lit à la manche atteinte. */}
+        {manchesMax > 1 && (
+          <div className="mt-3">
+            <div className="mb-1.5 flex items-baseline justify-between gap-2">
+              <span className="text-sm text-ecume">Nombre de manches</span>
+              {nbManches < manchesMax && (
+                <button
+                  type="button"
+                  onClick={() => setNbManchesChoisi(null)}
+                  className="min-h-9 rounded-lg px-2 text-xs text-or"
+                >
+                  Tout jouer
+                </button>
+              )}
+            </div>
+            <Pastilles
+              min={1}
+              max={manchesMax}
+              valeur={nbManches}
+              onChoisir={setNbManchesChoisi}
+              etiquette="Nombre de manches"
+            />
+          </div>
+        )}
+
         <p className="mt-2 text-xs text-brume">
           {calendrier.length} manche{calendrier.length > 1 ? "s" : ""} :{" "}
           {calendrier.join(" · ")} cartes

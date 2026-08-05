@@ -21,7 +21,7 @@ import {
   totaux,
   verifierPlis,
 } from "../engine/scoring"
-import { FORMATS_MANCHES, type FormatManches } from "../engine/rules"
+import { calendrierDe, type FormatManches } from "../engine/rules"
 
 const CLE_SAUVEGARDE = "skullking:partie"
 
@@ -52,6 +52,8 @@ export type ConfigNouvellePartie = {
   systeme: Systeme
   options: OptionsPartie
   format: FormatManches
+  /** Manches réellement jouées, au plus la longueur du format. */
+  nbManches: number
 }
 
 type EtatJeu = {
@@ -147,8 +149,8 @@ function reducer(etat: EtatJeu, action: Action): EtatJeu {
   const { partie } = etat
 
   if (action.type === "nouvellePartie") {
-    const { joueurs, systeme, options, format } = action.config
-    const calendrier = [...FORMATS_MANCHES[format]]
+    const { joueurs, systeme, options, format, nbManches } = action.config
+    const calendrier = calendrierDe(format, nbManches)
     const neuve: Partie = {
       joueurs,
       systeme,

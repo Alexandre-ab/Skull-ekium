@@ -129,6 +129,19 @@ export const FORMATS_MANCHES: Record<FormatManches, readonly number[]> = {
   heureDuDodo: [1],
 }
 
+/**
+ * Calendrier d'une partie : le format choisi, ramené au nombre de manches voulu.
+ *
+ * Aucune règle n'impose d'aller au bout des dix manches ; une tablée qui n'a
+ * qu'une heure devant elle s'arrête plus tôt. On coupe la fin plutôt que le
+ * début : les manches courtes servent à se mettre en jambes.
+ */
+export function calendrierDe(format: FormatManches, nbManches: number): number[] {
+  const complet = FORMATS_MANCHES[format]
+  const retenues = Math.min(Math.max(1, Math.round(nbManches)), complet.length)
+  return complet.slice(0, retenues)
+}
+
 /** Libellés des formats, pour l'écran de mise en place. */
 export const LIBELLES_FORMATS: Record<FormatManches, string> = {
   classique: "Classique — 1 à 10 cartes",

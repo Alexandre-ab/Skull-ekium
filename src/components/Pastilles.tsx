@@ -12,10 +12,19 @@ type Props = {
   etiquette: string
   /** Palette d'accent, pour distinguer mise et plis d'un coup d'œil. */
   ton?: "or" | "cordage"
+  /** Première valeur proposée. Un nombre de manches ne commence pas à zéro. */
+  min?: number
 }
 
-export function Pastilles({ max, valeur, onChoisir, etiquette, ton = "or" }: Props) {
-  const choix = Array.from({ length: max + 1 }, (_, i) => i)
+export function Pastilles({
+  max,
+  valeur,
+  onChoisir,
+  etiquette,
+  ton = "or",
+  min = 0,
+}: Props) {
+  const choix = Array.from({ length: Math.max(0, max - min + 1) }, (_, i) => i + min)
   const actif = ton === "or" ? "pastille-or" : "pastille-cordage"
 
   return (

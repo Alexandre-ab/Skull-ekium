@@ -154,6 +154,9 @@ tourbillon : [9,7,5,3,1]
 heureDuDodo: [1]
 ```
 
+Le format donne le calendrier complet ; la mise en place permet de n'en jouer
+que les `n` premières manches. Rien n'oblige à aller au bout des dix.
+
 Paquet : 70 cartes de base. Chaque extension retenue ajoute les siennes —
 Butin 2, Kraken 1, Baleine blanche 1 — soit 74 quand les trois sont en jeu.
 Plafonner les cartes distribuées à `floor(paquet / nbJoueurs)`.
@@ -188,6 +191,11 @@ Déroulé d'une manche, un écran par étape :
 
 - Saisie exclusivement par **boutons pastilles** (0 à N). Jamais de clavier
   numérique pour un nombre de plis.
+- Mises et Plis se saisissent **en accordéon** : un seul joueur déplié à la
+  fois, les autres sur une ligne. Toucher sa valeur ouvre le joueur suivant.
+  À six joueurs et dix cartes, la liste dépliée déborderait de trois écrans.
+- Le pari du Flambeur se pose **à l'étape Mises**, jamais après : à l'étape
+  Bonus les plis sont connus et le pari ne risquerait plus rien.
 - **Barre supérieure permanente** sur tous les écrans : accès au menu à gauche,
   au classement à droite. L'utilisateur ne doit jamais se retrouver bloqué.
 - **Mini-classement toujours visible** pendant la saisie.
