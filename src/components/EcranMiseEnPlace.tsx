@@ -78,7 +78,9 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 pb-32">
+    /* Repère « main » : sans lui, un lecteur d'écran n'a aucun moyen de
+       sauter directement au contenu, et doit parcourir la page entière. */
+    <main className="mx-auto max-w-lg px-4 pb-32">
       <div className="flex items-start justify-between gap-3 pt-6">
         <div>
           <h1 className="titre pb-1 text-3xl text-or">Skull King</h1>
@@ -342,7 +344,7 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
           )}
         </div>
       </div>
-    </div>
+    </main>
   )
 }
 

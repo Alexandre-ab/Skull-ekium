@@ -76,7 +76,9 @@ function Ecrans() {
             archivée{palmares.parties.length > 1 ? "s" : ""}
           </div>
         </header>
-        <EcranPalmares palmares={palmares} onFermer={() => setVuePalmares(false)} />
+        <main>
+          <EcranPalmares palmares={palmares} onFermer={() => setVuePalmares(false)} />
+        </main>
       </div>
     )
   }
@@ -142,7 +144,9 @@ function Ecrans() {
           onMenu={() => setMenuOuvert(true)}
           onClassement={() => setVueClassement(false)}
         />
-        <EcranClassement jeu={jeu} onCorriger={ouvrirCorrection} />
+        <main>
+          <EcranClassement jeu={jeu} onCorriger={ouvrirCorrection} />
+        </main>
         <div className="sticky bottom-0 border-t border-pont barre-voilee p-3">
           <button
             type="button"
@@ -184,7 +188,9 @@ function Ecrans() {
           onMenu={() => setMenuOuvert(true)}
           onClassement={() => setVueClassement(true)}
         />
-        <EcranClassement jeu={jeu} onCorriger={ouvrirCorrection} />
+        <main>
+          <EcranClassement jeu={jeu} onCorriger={ouvrirCorrection} />
+        </main>
         <div className="sticky bottom-0 border-t border-pont barre-voilee p-3">
           <button
             type="button"
