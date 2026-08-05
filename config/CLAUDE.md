@@ -207,7 +207,8 @@ Déroulé d'une manche, un écran par étape :
 - **Correction d'une manche validée** : toucher une ligne du tableau récapitulatif
   la rouvre en saisie et recalcule tous les totaux suivants. Fonctionnalité
   essentielle, c'est la demande n°1 sur les applis concurrentes.
-- Annulation de la dernière manche depuis le menu.
+- Effacement de la dernière manche depuis le menu. Le mot « annuler » reste
+  réservé au renvoi des modales : un bouton, une action, un seul sens.
 - Modales internes pour toutes les confirmations. **Jamais `confirm()` natif** :
   il est bloqué dans certains contextes embarqués et l'action échoue en silence.
 

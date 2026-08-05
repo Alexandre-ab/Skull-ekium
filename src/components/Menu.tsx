@@ -58,7 +58,7 @@ export function Menu({
             disabled={partie.manches.length === 0}
             className="min-h-12 w-full rounded-xl border border-pont px-3 text-left text-sm text-ecume disabled:opacity-30"
           >
-            Annuler la dernière manche
+            Effacer la dernière manche
             <span className="block text-xs text-brume">
               {partie.manches.length === 0
                 ? "Aucune manche validée"

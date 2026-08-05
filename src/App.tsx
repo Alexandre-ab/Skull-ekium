@@ -331,9 +331,14 @@ function Confirmations({
 }: ConfirmationsProps) {
   if (confirmation === "annulerManche") {
     return (
+      /*
+        « Effacer » et non « Annuler » : le bouton de renvoi de la modale dit
+        déjà « Annuler ». Le même mot pour refermer une boîte de dialogue et
+        pour supprimer une manche de jeu, entre deux tours, se paie cher.
+      */
       <Modale
-        titre="Annuler la dernière manche ?"
-        libelleConfirmer="Annuler la manche"
+        titre="Effacer la dernière manche ?"
+        libelleConfirmer="Effacer la manche"
         danger
         onAnnuler={fermer}
         onConfirmer={() => {
