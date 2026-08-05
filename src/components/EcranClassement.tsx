@@ -24,8 +24,8 @@ export function EcranClassement({ jeu, onCorriger }: Props) {
             <div className="text-[0.7rem] tracking-[0.2em] text-brume uppercase">
               Capitaine des Sept Mers
             </div>
-            <div className="titre-grave mt-1 text-2xl text-or">{ordre[0]?.nom}</div>
-            <div className="mt-1 text-sm text-ecume tabular-nums">
+            <div className="titre mt-1 text-2xl text-or">{ordre[0]?.nom}</div>
+            <div className="mt-1 text-sm text-ecume chiffres">
               {ordre[0]?.score} points
             </div>
           </div>
@@ -70,11 +70,11 @@ function LigneClassement({ rang, nom, score, coule = false }: LigneProps) {
         rang === 1 && !coule ? "carte-or" : "carte",
       ].join(" ")}
     >
-      <span className="w-6 text-center text-sm text-brume tabular-nums">{rang}</span>
+      <span className="w-6 text-center text-sm text-brume chiffres">{rang}</span>
       <span className="min-w-0 flex-1 truncate font-bold text-ecume">{nom}</span>
       <span
         className={[
-          "text-lg font-bold tabular-nums",
+          "text-lg font-bold chiffres",
           score > 0 ? "text-tribord" : score < 0 ? "text-babord" : "text-brume",
         ].join(" ")}
       >

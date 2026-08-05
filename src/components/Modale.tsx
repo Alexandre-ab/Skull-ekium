@@ -48,7 +48,7 @@ export function Modale({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-sm rounded-2xl carte p-5 shadow-2xl"
       >
-        <h2 className="titre-grave text-lg text-ecume">{titre}</h2>
+        <h2 className="titre text-lg text-ecume">{titre}</h2>
         {children && <div className="mt-2 text-sm text-brume">{children}</div>}
         <div className="mt-5 flex gap-2">
           <button

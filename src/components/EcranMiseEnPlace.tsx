@@ -81,7 +81,7 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
     <div className="mx-auto max-w-lg px-4 pb-32">
       <div className="flex items-start justify-between gap-3 pt-6">
         <div>
-          <h1 className="titre-grave pb-1 text-3xl text-or">Skull King</h1>
+          <h1 className="titre pb-1 text-3xl text-or">Skull King</h1>
           <p className="pb-6 text-sm text-brume">Journal de bord — feuille de score</p>
         </div>
         <button
@@ -290,7 +290,7 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
           ))}
         </div>
         <p className="mt-2 text-xs text-brume">
-          Paquet : <span className="tabular-nums">{taillePaquet(options)}</span> cartes
+          Paquet : <span className="chiffres">{taillePaquet(options)}</span> cartes
         </p>
       </section>
 

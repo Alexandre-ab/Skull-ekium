@@ -70,7 +70,7 @@ function Ecrans() {
     return (
       <div className="min-h-full">
         <header className="sticky top-0 z-30 border-b border-pont barre-voilee px-4 py-3 text-center">
-          <div className="titre-grave text-sm text-or">Palmarès</div>
+          <div className="titre text-sm text-or">Palmarès</div>
           <div className="text-xs text-brume">
             {palmares.parties.length} partie{palmares.parties.length > 1 ? "s" : ""}{" "}
             archivée{palmares.parties.length > 1 ? "s" : ""}

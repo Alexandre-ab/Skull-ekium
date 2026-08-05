@@ -70,7 +70,7 @@ export function EcranPlis({ jeu }: { jeu: Jeu }) {
               {saisi && score && (
                 <span
                   className={[
-                    "ml-2 font-bold tabular-nums",
+                    "ml-2 font-bold chiffres",
                     score.base > 0 ? "text-tribord" : score.base < 0 ? "text-babord" : "",
                   ].join(" ")}
                 >

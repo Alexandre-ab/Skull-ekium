@@ -1,19 +1,38 @@
 @import "tailwindcss";
 
 /*
- * Cinzel, capitales gravées — le ton des cartes marines et des frontons.
- * Auto-hébergée : un CDN laisserait l'appli nue en mode avion, et le fichier
- * est précaché par le service worker (globPatterns inclut woff2).
- * Fichier variable, un seul téléchargement couvre les graisses 500 à 700.
- * SIL Open Font License 1.1 — voir public/fonts/Cinzel-OFL.txt.
+ * Deux polices auto-hébergées. Un CDN laisserait l'appli nue en mode avion ;
+ * les fichiers sont précachés par le service worker (globPatterns inclut woff2).
+ * Sous-ensemble latin : couvre tous les accents du français.
+ *
+ * Fraunces, antique de labeur — la chaleur d'un registre tenu à la main,
+ * là où Cinzel n'apportait qu'une époque. Graisse 700 seule : le fichier
+ * variable complet pesait 120 ko contre 35, pour un axe de fantaisie qu'on
+ * n'aurait employé nulle part. L'axe de taille optique, lui, est conservé.
+ * SIL Open Font License 1.1 — voir public/fonts/Fraunces-OFL.txt.
  */
 @font-face {
-  font-family: "Cinzel";
+  font-family: "Fraunces";
   font-style: normal;
-  font-weight: 500 700;
+  font-weight: 700;
   font-display: swap;
-  src: url("/fonts/cinzel-latin.woff2") format("woff2");
-  /* Sous-ensemble latin : couvre tous les accents du français. */
+  src: url("/fonts/fraunces-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+20AC, U+2122, U+2212, U+FEFF, U+FFFD;
+}
+
+/*
+ * IBM Plex Mono pour les chiffres, et rien d'autre. Sur une feuille de score
+ * les nombres sont le sujet : ils méritent une chasse fixe qui les aligne en
+ * colonnes et distingue franchement le 0 du 6 et du 8.
+ * SIL Open Font License 1.1 — voir public/fonts/IBMPlexMono-OFL.txt.
+ */
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/plex-mono-latin.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
     U+02DC, U+2000-206F, U+20AC, U+2122, U+2212, U+FEFF, U+FFFD;
 }
@@ -35,7 +54,8 @@
   --color-or-sombre: #a9761f;
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-titre: "Cinzel", ui-serif, Georgia, serif;
+  --font-titre: "Fraunces", ui-serif, Georgia, serif;
+  --font-chiffres: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 :root {
@@ -176,11 +196,30 @@ body {
       0 6px 14px -8px color-mix(in oklab, var(--color-cordage) 90%, transparent);
   }
 
-  /* Titres gravés : Cinzel n'existe qu'en capitales, l'interlettrage l'aère. */
-  .titre-grave {
+  /*
+   * Titres. Cinzel n'existait qu'en capitales et réclamait de l'interlettrage ;
+   * Fraunces a des bas-de-casse et se resserre au contraire.
+   *
+   * L'axe de taille optique reste automatique : figé à sa valeur d'affichage,
+   * il donnait à un titre de 14 px les déliés d'un titre de 100 px, qui
+   * s'effacent sur un écran de téléphone.
+   */
+  .titre {
     font-family: var(--font-titre);
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: -0.015em;
+    font-optical-sizing: auto;
+  }
+
+  /*
+   * Chiffres. La chasse fixe aligne les colonnes de scores et empêche les
+   * nombres de danser d'une manche à l'autre. Réservée aux nombres : en
+   * étendre l'usage au texte rendrait la lecture pénible sur un téléphone.
+   */
+  .chiffres {
+    font-family: var(--font-chiffres);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
   }
 
   /* Barres collantes : le contenu doit s'estomper dessous, pas s'y cogner. */

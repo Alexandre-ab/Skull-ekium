@@ -39,7 +39,7 @@ export function Pastilles({
             aria-label={`${etiquette} : ${n}`}
             onClick={() => onChoisir(n)}
             className={[
-              "min-h-11 min-w-11 rounded-xl border text-base tabular-nums",
+              "min-h-11 min-w-11 rounded-xl border text-base chiffres",
               "transition-[transform,background-color,border-color,color] duration-150",
               "active:scale-95",
               choisi

@@ -27,7 +27,7 @@ export function MiniClassement({ joueurs, totaux }: Props) {
           <span className="max-w-24 truncate text-ecume">{joueur.nom}</span>
           <span
             className={[
-              "font-bold tabular-nums",
+              "font-bold chiffres",
               joueur.score > 0 ? "text-tribord" : joueur.score < 0 ? "text-babord" : "text-brume",
             ].join(" ")}
           >

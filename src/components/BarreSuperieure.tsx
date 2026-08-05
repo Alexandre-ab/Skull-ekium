@@ -27,7 +27,7 @@ export function BarreSuperieure({ titre, sousTitre, onMenu, onClassement }: Prop
       </button>
 
       <div className="min-w-0 flex-1 text-center">
-        <div className="titre-grave truncate text-sm text-ecume">{titre}</div>
+        <div className="titre truncate text-sm text-ecume">{titre}</div>
         {sousTitre && <div className="truncate text-xs text-brume">{sousTitre}</div>}
       </div>
 

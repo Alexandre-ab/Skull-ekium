@@ -55,7 +55,7 @@ export function EcranMises({ jeu }: { jeu: Jeu }) {
                           aria-label={`Pari de ${partie.joueurs[i]} : ${pari}`}
                           onClick={() => jeu.definirBonus(i, "flambeur", pari)}
                           className={[
-                            "min-h-11 flex-1 rounded-xl border text-sm tabular-nums",
+                            "min-h-11 flex-1 rounded-xl border text-sm chiffres",
                             "transition-transform active:scale-95",
                             choisi ? "pastille-or font-bold" : "carte text-brume",
                           ].join(" ")}

@@ -59,7 +59,7 @@ export function EcranBonus({ jeu }: { jeu: Jeu }) {
               <span className="font-bold text-ecume">{nom}</span>
               <span className="flex items-center gap-2">
                 {points > 0 && (
-                  <span className="rounded-full bg-or/15 px-2 py-0.5 text-xs font-bold text-or tabular-nums">
+                  <span className="rounded-full bg-or/15 px-2 py-0.5 text-xs font-bold text-or chiffres">
                     +{points}
                   </span>
                 )}
@@ -235,7 +235,7 @@ function CompteurBonus({ etiquette, detail, valeur, max, onChanger }: CompteurPr
             aria-label={`${etiquette} : ${n}`}
             onClick={() => onChanger(n)}
             className={[
-              "min-h-11 flex-1 rounded-xl border text-sm tabular-nums",
+              "min-h-11 flex-1 rounded-xl border text-sm chiffres",
               valeur === n
                 ? "border-or bg-or text-abysse font-bold"
                 : "border-pont bg-abysse text-brume",

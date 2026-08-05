@@ -78,7 +78,7 @@ export function SaisieJoueurs({
         return (
           <div key={nom} className="rounded-2xl carte-or p-3">
             <div className="mb-2 flex items-baseline justify-between gap-2">
-              <span className="titre-grave text-lg text-or">{nom}</span>
+              <span className="titre text-lg text-or">{nom}</span>
               <span className="text-xs text-brume">{resume(i)}</span>
             </div>
             <Pastilles

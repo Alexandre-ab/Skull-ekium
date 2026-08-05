@@ -214,6 +214,17 @@ Déroulé d'une manche, un écran par étape :
 Accessibilité : cibles tactiles ≥ 44 px, focus clavier visible,
 `prefers-reduced-motion` respecté.
 
+Typographie : **Fraunces** pour les titres, **IBM Plex Mono** pour les nombres
+et rien d'autre — sur une feuille de score les chiffres sont le sujet, et la
+chasse fixe les aligne en colonnes. Le corps de texte reste en police système,
+qui s'affiche sans attendre. Les deux polices sont auto-hébergées.
+
+La feuille de score est **la carte de la traversée** : score cumulé en
+ordonnée, manches en abscisse, une ligne par joueur. Un tableau à une colonne
+par joueur déborde de l'écran dès quatre joueurs. Un seul joueur est mis en
+avant à la fois, nommé au bout de sa ligne : la palette n'offre pas dix teintes
+distinguables, et l'identité ne doit jamais tenir à la couleur seule.
+
 ---
 
 ## Configuration PWA
@@ -273,6 +284,25 @@ Points à ne pas rater :
 
 À la fin, `npm run build` doit passer sans erreur TypeScript et
 `npm run test` sans échec.
+
+---
+
+## Palmarès
+
+Les parties menées jusqu'à la dernière manche rejoignent un journal local
+(`skullking:palmares`), séparé de la partie en cours. Un abandon en route n'y
+entre pas : il fausserait les moyennes.
+
+L'indicateur mis en avant est la **précision d'annonce** — mises tenues
+exactement, rapportées aux manches jouées. C'est le seul chiffre comparable
+d'une partie à l'autre : le cumul de points dépend surtout de la longueur de
+la partie. Le classement suit les victoires, puis la précision ; classer sur
+la seule précision hisserait en tête qui n'a joué qu'une partie chanceuse.
+
+Chaque joueur porte un **sillage** : un point par partie, du plus ancien au
+plus récent, la hauteur donnant le rang obtenu ramené au nombre de joueurs ce
+soir-là. Or pour une victoire — l'or double la position, il ne la remplace
+pas, une victoire étant déjà tout en haut.
 
 ---
 

@@ -46,22 +46,22 @@ export function EcranRecap({ jeu }: { jeu: Jeu }) {
                   <th scope="row" className="max-w-28 truncate p-2 text-left font-normal text-ecume">
                     {nom}
                   </th>
-                  <td className="p-2 text-center tabular-nums text-brume">
+                  <td className="p-2 text-center chiffres text-brume">
                     {entree.mise ?? "—"} / {entree.plis ?? "—"}
                   </td>
                   <td
                     className={[
-                      "p-2 text-right tabular-nums",
+                      "p-2 text-right chiffres",
                       score.base > 0 ? "text-tribord" : score.base < 0 ? "text-babord" : "text-brume",
                     ].join(" ")}
                   >
                     {score.base > 0 ? "+" : ""}
                     {score.base}
                   </td>
-                  <td className="p-2 text-right tabular-nums text-or">
+                  <td className="p-2 text-right chiffres text-or">
                     {bonusAffiche !== 0 ? (bonusAffiche > 0 ? `+${bonusAffiche}` : bonusAffiche) : "—"}
                   </td>
-                  <td className="p-2 text-right font-bold tabular-nums text-ecume">
+                  <td className="p-2 text-right font-bold chiffres text-ecume">
                     {score.total > 0 ? "+" : ""}
                     {score.total}
                   </td>
@@ -94,13 +94,13 @@ export function EcranRecap({ jeu }: { jeu: Jeu }) {
                 key={joueur.nom}
                 className="flex items-center gap-2 rounded-xl carte px-3 py-2 text-sm"
               >
-                <span className="w-5 text-brume tabular-nums">{rang + 1}.</span>
+                <span className="w-5 text-brume chiffres">{rang + 1}.</span>
                 <span className="min-w-0 flex-1 truncate text-ecume">{joueur.nom}</span>
-                <span className="text-xs text-brume tabular-nums">
+                <span className="text-xs text-brume chiffres">
                   {joueur.gain > 0 ? "+" : ""}
                   {joueur.gain}
                 </span>
-                <span className="w-14 text-right font-bold tabular-nums text-ecume">
+                <span className="w-14 text-right font-bold chiffres text-ecume">
                   {joueur.score}
                 </span>
               </li>
