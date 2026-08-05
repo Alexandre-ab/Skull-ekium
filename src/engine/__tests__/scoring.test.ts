@@ -10,6 +10,7 @@ import {
   scorerManche,
   taillePaquet,
   totaux,
+  trajectoires,
   verifierPlis,
 } from "../scoring"
 import {
@@ -647,5 +648,52 @@ describe("calendrier d'une partie écourtée", () => {
   it("garde toujours au moins une manche", () => {
     expect(calendrierDe("classique", 0)).toEqual([1])
     expect(calendrierDe("classique", -3)).toEqual([1])
+  })
+})
+
+/* ═══════════ Trajectoires ═══════════ */
+
+describe("trajectoires", () => {
+  const trois = (mises: number[], plis: number[]) =>
+    mises.map((mise, i) => entree({ mise, plis: plis[i] ?? 0 }))
+
+  it("part de zéro pour tout le monde", () => {
+    expect(trajectoires([], 3, "skullking", options())).toEqual([[0], [0], [0]])
+  })
+
+  it("donne un point de plus qu'il n'y a de manches", () => {
+    const m = [manche(1, trois([1, 0, 0], [1, 0, 0]))]
+    const courbes = trajectoires(m, 3, "skullking", options())
+    expect(courbes[0]).toHaveLength(2)
+  })
+
+  it("cumule manche après manche", () => {
+    const m = [
+      manche(1, trois([1, 0, 0], [1, 0, 0])), // +20, +10, +10
+      manche(2, trois([2, 0, 0], [2, 0, 0])), // +40, +20, +20
+    ]
+    const courbes = trajectoires(m, 3, "skullking", options())
+    expect(courbes[0]).toEqual([0, 20, 60])
+    expect(courbes[1]).toEqual([0, 10, 30])
+  })
+
+  it("suit une chute sous zéro", () => {
+    // Mise 0 ratée à 9 cartes : −90, puis mise 1 tenue : +20.
+    const m = [
+      manche(9, trois([0, 0, 0], [2, 0, 0])),
+      manche(1, trois([1, 0, 0], [1, 0, 0])),
+    ]
+    const courbes = trajectoires(m, 3, "skullking", options())
+    expect(courbes[0]).toEqual([0, -90, -70])
+  })
+
+  it("s'accorde avec les totaux finaux", () => {
+    const m = [
+      manche(3, trois([1, 2, 0], [1, 1, 0])),
+      manche(4, trois([2, 0, 1], [2, 0, 1])),
+    ]
+    const courbes = trajectoires(m, 3, "skullking", options())
+    const finaux = totaux(m, 3, "skullking", options())
+    expect(courbes.map((c) => c[c.length - 1])).toEqual(finaux)
   })
 })

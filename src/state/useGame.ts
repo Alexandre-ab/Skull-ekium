@@ -18,6 +18,7 @@ import {
   cartesDeLaManche,
   plisADistribuer,
   scorerManche,
+  trajectoires,
   totaux,
   verifierPlis,
 } from "../engine/scoring"
@@ -423,6 +424,17 @@ export function useGame() {
     return totaux(projection, partie.joueurs.length, partie.systeme, partie.options)
   }, [partie])
 
+  /** Score cumulé de chaque joueur après chaque manche, pour la carte. */
+  const courbes = useMemo(() => {
+    if (!partie) return []
+    return trajectoires(
+      partie.manches,
+      partie.joueurs.length,
+      partie.systeme,
+      partie.options,
+    )
+  }, [partie])
+
   /** Cohérence entre les plis saisis et les cartes distribuées. */
   const coherence = useMemo(() => {
     if (!partie) return null
@@ -476,6 +488,7 @@ export function useGame() {
     classementProjete,
     scoresBrouillon,
     coherence,
+    courbes,
     cumulApres,
     ...actions,
   }

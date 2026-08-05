@@ -288,3 +288,30 @@ export function totaux(
   }
   return cumul
 }
+
+/**
+ * Trajectoire de chaque joueur : son score cumulé après chaque manche.
+ *
+ * Une entrée par joueur, chacune longue de `manches.length + 1` — la première
+ * vaut 0, avant que rien ne soit joué. C'est ce point de départ commun qui
+ * permet de lire l'écart se creuser depuis le début de la traversée.
+ */
+export function trajectoires(
+  manches: readonly Manche[],
+  nbJoueurs: number,
+  systeme: Systeme,
+  options: OptionsPartie,
+): number[][] {
+  const courbes = Array.from({ length: nbJoueurs }, () => [0])
+  const cumul = new Array<number>(nbJoueurs).fill(0)
+
+  for (const manche of manches) {
+    const scores = scorerManche(manche, systeme, options)
+    for (let joueur = 0; joueur < nbJoueurs; joueur += 1) {
+      cumul[joueur] = (cumul[joueur] ?? 0) + (scores[joueur]?.total ?? 0)
+      courbes[joueur]?.push(cumul[joueur] ?? 0)
+    }
+  }
+
+  return courbes
+}
