@@ -1,6 +1,7 @@
 /** Étape 2 — les plis remportés, avec le contrôle de cohérence. */
 
 import { Pastilles } from "./Pastilles"
+import { SaisieJoueurs } from "./SaisieJoueurs"
 import { plisADistribuer } from "../engine/scoring"
 import type { Jeu } from "../state/useGame"
 
@@ -52,40 +53,35 @@ export function EcranPlis({ jeu }: { jeu: Jeu }) {
         </div>
       )}
 
-      {partie.joueurs.map((nom, i) => {
-        const entree = entrees[i]
-        const score = scoresBrouillon[i]
-        const mise = entree?.mise ?? 0
-        const saisi = entree?.plis !== null && entree?.plis !== undefined
-        return (
-          <div key={nom} className="rounded-2xl carte p-3">
-            <div className="mb-2 flex items-baseline justify-between gap-2">
-              <span className="font-bold text-ecume">{nom}</span>
-              <span className="text-xs text-brume">
-                misé {mise}
-                {saisi && score && (
-                  <span
-                    className={[
-                      "ml-2 font-bold tabular-nums",
-                      score.base > 0 ? "text-tribord" : score.base < 0 ? "text-babord" : "",
-                    ].join(" ")}
-                  >
-                    {score.base > 0 ? "+" : ""}
-                    {score.base}
-                  </span>
-                )}
-              </span>
-            </div>
-            <Pastilles
-              max={aRepartir}
-              valeur={entree?.plis ?? null}
-              onChoisir={(v) => jeu.definirPlis(i, v)}
-              etiquette={`Plis de ${nom}`}
-              ton="cordage"
-            />
-          </div>
-        )
-      })}
+      <SaisieJoueurs
+        joueurs={partie.joueurs}
+        valeurs={entrees.map((e) => e.plis)}
+        max={aRepartir}
+        onChoisir={(i, v) => jeu.definirPlis(i, v)}
+        etiquette={(nom) => `Plis de ${nom}`}
+        ton="cordage"
+        resume={(i) => {
+          const entree = entrees[i]
+          const score = scoresBrouillon[i]
+          const saisi = entree?.plis !== null && entree?.plis !== undefined
+          return (
+            <>
+              misé {entree?.mise ?? 0}
+              {saisi && score && (
+                <span
+                  className={[
+                    "ml-2 font-bold tabular-nums",
+                    score.base > 0 ? "text-tribord" : score.base < 0 ? "text-babord" : "",
+                  ].join(" ")}
+                >
+                  {score.base > 0 ? "+" : ""}
+                  {score.base}
+                </span>
+              )}
+            </>
+          )
+        }}
+      />
 
       {coherence && coherence.etat !== "incomplet" && coherence.etat !== "exact" && (
         <div
