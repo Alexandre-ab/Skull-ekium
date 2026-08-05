@@ -15,7 +15,6 @@ import {
   MAX_PIRATES_CAPTURES,
   MAX_QUATORZE_COULEUR,
   MAX_SIRENES_CAPTUREES,
-  PARIS_FLAMBEUR,
 } from "../engine/rules"
 import { bonusBrut } from "../engine/scoring"
 import type { Jeu } from "../state/useGame"
@@ -115,31 +114,15 @@ export function EcranBonus({ jeu }: { jeu: Jeu }) {
                   />
                 )}
 
-                {options.flambeurActif && (
-                  <div>
-                    <div className="mb-1.5 text-sm text-ecume">Rascal le Flambeur</div>
-                    <div className="mb-2 text-xs text-brume">
-                      Pari gagné si la mise est exacte, perdu sinon
-                    </div>
-                    <div className="flex gap-1.5">
-                      {PARIS_FLAMBEUR.map((pari) => (
-                        <button
-                          key={pari}
-                          type="button"
-                          aria-pressed={entree.flambeur === pari}
-                          onClick={() => jeu.definirBonus(i, "flambeur", pari)}
-                          className={[
-                            "min-h-11 flex-1 rounded-xl border text-sm tabular-nums",
-                            entree.flambeur === pari
-                              ? "border-or bg-or text-abysse font-bold"
-                              : "border-pont bg-abysse text-brume",
-                          ].join(" ")}
-                        >
-                          {pari}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                {/*
+                  Le pari du Flambeur se pose à l'étape Mises, pas ici : à ce
+                  stade les plis sont connus, parier ne coûterait plus rien.
+                  Rappelé en lecture seule pour que le récapitulatif se comprenne.
+                */}
+                {options.flambeurActif && entree.flambeur !== 0 && (
+                  <p className="text-xs text-brume">
+                    Pari du Flambeur : {entree.flambeur} points, posé à la mise.
+                  </p>
                 )}
               </div>
             )}
