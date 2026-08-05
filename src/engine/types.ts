@@ -103,6 +103,21 @@ export type PartieArchivee = {
   totaux: number[]
   /** Nombre de manches jouées. */
   manches: number
+  /**
+   * Mises tenues exactement, une par joueur.
+   * Absent des parties archivées avant que l'appli ne mesure la précision.
+   */
+  exactes?: number[]
+}
+
+/** Place d'un joueur à l'issue d'une partie, pour lire l'historique. */
+export type Resultat = {
+  date: string
+  /** 1 pour le vainqueur ; les ex æquo partagent le même rang. */
+  rang: number
+  /** Joueurs autour de la table ce soir-là, pour situer le rang. */
+  joueurs: number
+  total: number
 }
 
 /** Statistiques cumulées d'un joueur sur toutes les parties archivées. */
@@ -117,6 +132,17 @@ export type StatsJoueur = {
   moyenne: number
   /** Meilleur total sur une partie. */
   meilleur: number
+  /** Manches jouées dans les parties qui mesurent la précision d'annonce. */
+  manchesMesurees: number
+  /** Mises tenues exactement sur ces manches. */
+  misesExactes: number
+  /**
+   * `misesExactes / manchesMesurees`, `null` si aucune partie ne le mesure.
+   * C'est le talent que Skull King demande vraiment : annoncer juste.
+   */
+  precision: number | null
+  /** Une entrée par partie, de la plus ancienne à la plus récente. */
+  sillage: Resultat[]
 }
 
 /**

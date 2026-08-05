@@ -5,6 +5,7 @@
 
 import { useState } from "react"
 import { Modale } from "./Modale"
+import { Sillage } from "./Sillage"
 import { vainqueurs } from "../engine/palmares"
 import type { StatsJoueur } from "../engine/types"
 import type { Palmares } from "../state/usePalmares"
@@ -26,6 +27,8 @@ const DATE_COURTE = new Intl.DateTimeFormat("fr-FR", {
 export function EcranPalmares({ palmares, onFermer }: Props) {
   const { classementGlobal, parties, equipage } = palmares
   const [confirmation, setConfirmation] = useState<Confirmation>(null)
+  // Une seule fiche dépliée : en ouvrir plusieurs ramènerait le défilement.
+  const [detaille, setDetaille] = useState<string | null>(null)
 
   return (
     <div className="pb-6">
@@ -43,7 +46,15 @@ export function EcranPalmares({ palmares, onFermer }: Props) {
         ) : (
           <ul className="space-y-1.5">
             {classementGlobal.map((fiche, i) => (
-              <LigneFiche key={fiche.nom} rang={i + 1} fiche={fiche} />
+              <LigneFiche
+                key={fiche.nom}
+                rang={i + 1}
+                fiche={fiche}
+                ouvert={detaille === fiche.nom}
+                onBasculer={() =>
+                  setDetaille((actuel) => (actuel === fiche.nom ? null : fiche.nom))
+                }
+              />
             ))}
           </ul>
         )}
@@ -55,7 +66,7 @@ export function EcranPalmares({ palmares, onFermer }: Props) {
           <div className="mb-2 flex items-baseline justify-between gap-2">
             <h2 id="titre-journal" className="text-xs font-bold text-brume">
               Parties jouées
-              <span className="ml-2 font-normal tabular-nums">{parties.length}</span>
+              <span className="ml-2 font-normal chiffres">{parties.length}</span>
             </h2>
             <button
               type="button"
@@ -78,7 +89,7 @@ export function EcranPalmares({ palmares, onFermer }: Props) {
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-bold text-ecume">
                       {gagnants.map((i) => partie.joueurs[i]).join(" & ") || "—"}
-                      <span className="ml-2 font-normal text-or tabular-nums">
+                      <span className="ml-2 font-normal text-or chiffres">
                         {meilleur}
                       </span>
                     </div>
@@ -180,39 +191,73 @@ export function EcranPalmares({ palmares, onFermer }: Props) {
 
 /* ═══════════ Ligne de classement général ═══════════ */
 
-function LigneFiche({ rang, fiche }: { rang: number; fiche: StatsJoueur }) {
+type LigneProps = {
+  rang: number
+  fiche: StatsJoueur
+  ouvert: boolean
+  onBasculer: () => void
+}
+
+function LigneFiche({ rang, fiche, ouvert, onBasculer }: LigneProps) {
   return (
-    <li
-      className={[
-        "rounded-2xl border p-3",
-        rang === 1 ? "carte-or" : "carte",
-      ].join(" ")}
-    >
-      <div className="flex items-center gap-3">
-        <span className="w-6 text-center text-sm text-brume tabular-nums">{rang}</span>
-        <span className="min-w-0 flex-1 truncate font-bold text-ecume">{fiche.nom}</span>
-        <span className="text-lg font-bold text-or tabular-nums">
-          {fiche.victoires}
-          <span className="ml-1 text-xs font-normal text-brume">
-            victoire{fiche.victoires > 1 ? "s" : ""}
+    <li className={rang === 1 ? "rounded-2xl carte-or" : "rounded-2xl carte"}>
+      <button
+        type="button"
+        onClick={onBasculer}
+        aria-expanded={ouvert}
+        className="flex min-h-14 w-full items-center gap-3 p-3 text-left"
+      >
+        <span className="w-5 shrink-0 text-center text-sm text-brume chiffres">
+          {rang}
+        </span>
+
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-bold text-ecume">{fiche.nom}</span>
+          <span className="block truncate text-xs text-brume">
+            {fiche.victoires} victoire{fiche.victoires > 1 ? "s" : ""} ·{" "}
+            {fiche.parties} partie{fiche.parties > 1 ? "s" : ""}
           </span>
         </span>
-      </div>
-      <dl className="mt-2 grid grid-cols-4 gap-2 border-t border-pont pt-2 text-center">
-        <Chiffre libelle="Parties" valeur={fiche.parties} />
-        <Chiffre libelle="Moyenne" valeur={Math.round(fiche.moyenne)} />
-        <Chiffre libelle="Total" valeur={fiche.points} />
-        <Chiffre libelle="Record" valeur={fiche.meilleur} />
-      </dl>
+
+        <Sillage resultats={fiche.sillage} nom={fiche.nom} />
+
+        {/* La précision d'annonce, pas le cumul de points : c'est le seul
+            chiffre comparable d'une partie à l'autre, quelle que soit sa durée. */}
+        <span className="w-12 shrink-0 text-right">
+          {fiche.precision === null ? (
+            <span className="text-sm text-brume">—</span>
+          ) : (
+            <span className="text-lg font-bold text-or chiffres">
+              {Math.round(fiche.precision * 100)}
+              <span className="text-xs font-normal">%</span>
+            </span>
+          )}
+        </span>
+      </button>
+
+      {ouvert && (
+        <dl className="grid grid-cols-3 gap-2 border-t border-pont p-3 text-center">
+          <Chiffre libelle="Moyenne" valeur={`${Math.round(fiche.moyenne)}`} />
+          <Chiffre libelle="Meilleure partie" valeur={`${fiche.meilleur}`} />
+          <Chiffre
+            libelle="Mises tenues"
+            valeur={
+              fiche.manchesMesurees === 0
+                ? "—"
+                : `${fiche.misesExactes} / ${fiche.manchesMesurees}`
+            }
+          />
+        </dl>
+      )}
     </li>
   )
 }
 
-function Chiffre({ libelle, valeur }: { libelle: string; valeur: number }) {
+function Chiffre({ libelle, valeur }: { libelle: string; valeur: string }) {
   return (
     <div>
       <dt className="text-[0.65rem] text-brume">{libelle}</dt>
-      <dd className="text-sm font-bold text-ecume tabular-nums">{valeur}</dd>
+      <dd className="text-sm font-bold text-ecume chiffres">{valeur}</dd>
     </div>
   )
 }

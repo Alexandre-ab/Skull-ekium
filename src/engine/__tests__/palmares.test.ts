@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { PartieArchivee } from "../types"
-import { cleJoueur, statistiques, vainqueurs } from "../palmares"
+import { cleJoueur, rangDans, statistiques, vainqueurs } from "../palmares"
 
 /* ═══════════ Fabriques ═══════════ */
 
@@ -134,5 +134,112 @@ describe("statistiques", () => {
   it("tolère un total manquant sans casser le cumul", () => {
     const classement = statistiques([partie(["Suzie", "Léo"], [300])])
     expect(fiche(classement, "Léo")).toMatchObject({ parties: 1, points: 0 })
+  })
+})
+
+/* ═══════════ Rang dans une partie ═══════════ */
+
+describe("rangDans", () => {
+  it("donne le rang selon le total", () => {
+    const totaux = [300, 500, 100]
+    expect(rangDans(totaux, 1)).toBe(1)
+    expect(rangDans(totaux, 0)).toBe(2)
+    expect(rangDans(totaux, 2)).toBe(3)
+  })
+
+  it("partage le rang entre ex æquo, et saute le suivant", () => {
+    // Deux premiers ex æquo : le troisième joueur est troisième, pas deuxième.
+    const totaux = [500, 500, 100]
+    expect(rangDans(totaux, 0)).toBe(1)
+    expect(rangDans(totaux, 1)).toBe(1)
+    expect(rangDans(totaux, 2)).toBe(3)
+  })
+})
+
+/* ═══════════ Précision d'annonce ═══════════ */
+
+/** Partie archivée qui mesure les mises tenues. */
+function mesuree(
+  joueurs: string[],
+  totaux: number[],
+  manches: number,
+  exactes: number[],
+): PartieArchivee {
+  return { ...partie(joueurs, totaux), manches, exactes }
+}
+
+describe("précision d'annonce", () => {
+  it("rapporte les mises tenues au nombre de manches jouées", () => {
+    const classement = statistiques([mesuree(["Suzie"], [300], 10, [6])])
+    expect(fiche(classement, "Suzie").precision).toBeCloseTo(0.6)
+  })
+
+  it("cumule sur plusieurs parties de longueurs différentes", () => {
+    const classement = statistiques([
+      mesuree(["Suzie"], [300], 10, [5]),
+      mesuree(["Suzie"], [200], 5, [5]),
+    ])
+    // 10 tenues sur 15 manches, et non la moyenne de 50 % et 100 %.
+    expect(fiche(classement, "Suzie")).toMatchObject({
+      misesExactes: 10,
+      manchesMesurees: 15,
+    })
+    expect(fiche(classement, "Suzie").precision).toBeCloseTo(10 / 15)
+  })
+
+  it("vaut null quand aucune partie ne la mesure", () => {
+    const classement = statistiques([partie(["Suzie"], [300])])
+    expect(fiche(classement, "Suzie").precision).toBeNull()
+  })
+
+  it("ignore les parties non mesurées au lieu de les compter à zéro", () => {
+    const classement = statistiques([
+      mesuree(["Suzie"], [300], 10, [8]),
+      partie(["Suzie"], [200]), // archivée avant la mesure
+    ])
+    expect(fiche(classement, "Suzie")).toMatchObject({
+      manchesMesurees: 10,
+      misesExactes: 8,
+    })
+  })
+
+  it("départage deux joueurs à égalité de victoires par la précision", () => {
+    const classement = statistiques([
+      mesuree(["Suzie", "Nour"], [500, 100], 10, [7, 2]),
+      mesuree(["Léo", "Nour"], [500, 100], 10, [3, 2]),
+    ])
+    expect(classement.map((f) => f.nom)).toEqual(["Suzie", "Léo", "Nour"])
+  })
+})
+
+/* ═══════════ Sillage ═══════════ */
+
+describe("sillage", () => {
+  it("va de la partie la plus ancienne à la plus récente", () => {
+    // Le journal arrive du plus récent au plus ancien.
+    const classement = statistiques([
+      { ...partie(["Suzie", "Léo"], [100, 300]), date: "2026-08-05T20:00:00Z" },
+      { ...partie(["Suzie", "Léo"], [400, 100]), date: "2026-07-01T20:00:00Z" },
+    ])
+    expect(fiche(classement, "Suzie").sillage.map((r) => r.rang)).toEqual([1, 2])
+  })
+
+  it("retient le nombre de joueurs, pour situer le rang", () => {
+    const classement = statistiques([partie(["Suzie", "Léo", "Nour"], [100, 300, 200])])
+    expect(fiche(classement, "Suzie").sillage[0]).toMatchObject({
+      rang: 3,
+      joueurs: 3,
+      total: 100,
+    })
+  })
+
+  it("compte une entrée par partie jouée", () => {
+    const classement = statistiques([
+      partie(["Suzie", "Léo"], [100, 300]),
+      partie(["Suzie"], [200]),
+      partie(["Léo"], [200]),
+    ])
+    expect(fiche(classement, "Suzie").sillage).toHaveLength(2)
+    expect(fiche(classement, "Léo").sillage).toHaveLength(2)
   })
 })

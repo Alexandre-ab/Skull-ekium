@@ -5,7 +5,7 @@
  * Un journal de parties entre, un classement global sort.
  */
 
-import type { PartieArchivee, StatsJoueur } from "./types"
+import type { PartieArchivee, Resultat, StatsJoueur } from "./types"
 
 /**
  * Clé de regroupement d'un joueur.
@@ -24,13 +24,26 @@ export function vainqueurs(totaux: number[]): number[] {
 }
 
 /**
+ * Rang d'un joueur dans une partie : un de plus que le nombre de joueurs
+ * l'ayant devancé. Les ex æquo partagent donc le même rang.
+ */
+export function rangDans(totaux: number[], joueur: number): number {
+  const sien = totaux[joueur] ?? 0
+  return 1 + totaux.filter((t) => t > sien).length
+}
+
+/**
  * Statistiques cumulées, du plus titré au moins titré.
  *
  * `parties` est attendu du plus récent au plus ancien : c'est la première
- * orthographe rencontrée qui sert à l'affichage.
+ * orthographe rencontrée qui sert à l'affichage, et le sillage est retourné
+ * en fin de calcul pour se lire de gauche à droite dans l'ordre du temps.
  *
  * Une partie gagnée ex æquo compte une victoire pour chacun — la règle ne
  * départage pas les égalités, l'appli n'a pas à inventer un vainqueur.
+ *
+ * Le classement suit les victoires, puis la précision d'annonce. Classer sur
+ * la seule précision hisserait en tête qui n'a joué qu'une partie chanceuse.
  */
 export function statistiques(parties: PartieArchivee[]): StatsJoueur[] {
   const fiches = new Map<string, StatsJoueur>()
@@ -50,12 +63,32 @@ export function statistiques(parties: PartieArchivee[]): StatsJoueur[] {
         points: 0,
         moyenne: 0,
         meilleur: total,
+        manchesMesurees: 0,
+        misesExactes: 0,
+        precision: null,
+        sillage: [] as Resultat[],
       }
 
       fiche.parties += 1
       fiche.victoires += gagnants.has(i) ? 1 : 0
       fiche.points += total
       fiche.meilleur = Math.max(fiche.meilleur, total)
+
+      // Les parties archivées avant la mesure ne comptent pas dans le ratio :
+      // les inclure à zéro écraserait la précision de tout le monde.
+      const exactes = partie.exactes?.[i]
+      if (exactes !== undefined) {
+        fiche.manchesMesurees += partie.manches
+        fiche.misesExactes += exactes
+      }
+
+      fiche.sillage.push({
+        date: partie.date,
+        rang: rangDans(partie.totaux, i),
+        joueurs: partie.joueurs.length,
+        total,
+      })
+
       fiches.set(cle, fiche)
     })
   }
@@ -64,12 +97,17 @@ export function statistiques(parties: PartieArchivee[]): StatsJoueur[] {
     .map((fiche) => ({
       ...fiche,
       moyenne: fiche.parties === 0 ? 0 : fiche.points / fiche.parties,
+      precision:
+        fiche.manchesMesurees === 0
+          ? null
+          : fiche.misesExactes / fiche.manchesMesurees,
+      sillage: [...fiche.sillage].reverse(),
     }))
     .sort(
       (a, b) =>
         b.victoires - a.victoires ||
+        (b.precision ?? -1) - (a.precision ?? -1) ||
         b.moyenne - a.moyenne ||
-        b.points - a.points ||
         a.nom.localeCompare(b.nom, "fr"),
     )
 }

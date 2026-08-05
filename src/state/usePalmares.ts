@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import type { Partie, PartieArchivee } from "../engine/types"
 import { cleJoueur, statistiques } from "../engine/palmares"
+import { scorerManche } from "../engine/scoring"
 
 const CLE_EQUIPAGE = "skullking:equipage"
 const CLE_PARTIES = "skullking:palmares"
@@ -101,6 +102,15 @@ export function usePalmares() {
    * Le journal est stocké du plus récent au plus ancien.
    */
   const archiver = useCallback((partie: Partie, totaux: number[]) => {
+    // Mises tenues exactement, comptées une fois pour toutes : le détail des
+    // manches ne survit pas à l'archivage, la mesure doit se faire ici.
+    const exactes = partie.joueurs.map((_, j) =>
+      partie.manches.reduce((tenues, manche) => {
+        const score = scorerManche(manche, partie.systeme, partie.options)[j]
+        return tenues + (score?.exacte ? 1 : 0)
+      }, 0),
+    )
+
     const archive: PartieArchivee = {
       id: identifiant(),
       date: new Date().toISOString(),
@@ -108,6 +118,7 @@ export function usePalmares() {
       systeme: partie.systeme,
       totaux,
       manches: partie.manches.length,
+      exactes,
     }
     setParties((liste) => [archive, ...liste].slice(0, PARTIES_MAX))
     setEquipage((liste) => fusionner(liste, partie.joueurs))
