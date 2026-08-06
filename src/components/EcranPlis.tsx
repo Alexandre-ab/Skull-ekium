@@ -10,7 +10,7 @@ export function EcranPlis({ jeu }: { jeu: Jeu }) {
   if (!partie) return null
 
   const { entrees, plisDetruits } = partie.brouillon
-  const { kraken, baleineBlanche, harryActif } = partie.options
+  const { kraken, baleineBlanche, pouvoirsPirates } = partie.options
 
   // Les deux bêtes ne dévorent qu'un pli chacune, et jamais plus qu'il n'y a
   // de cartes : au-delà, le choix proposé n'aurait aucun sens.
@@ -61,7 +61,7 @@ export function EcranPlis({ jeu }: { jeu: Jeu }) {
         etiquette={(nom) => `Plis de ${nom}`}
         ton="cordage"
         complement={
-          harryActif
+          pouvoirsPirates
             ? (i) => <AjustementHarry jeu={jeu} joueur={i} />
             : undefined
         }

@@ -159,12 +159,6 @@ export function compterAlliancesReussies(manche: Manche, joueur: number): number
 /* ═══════════ Score d'une entrée ═══════════ */
 
 /**
- * Score d'un joueur pour une manche.
- *
- * @param cartes    cartes distribuées cette manche, plafond déjà appliqué
- * @param alliances alliances Butin réussies par ce joueur
- */
-/**
  * Mise réellement défendue : celle annoncée, ajustée du pouvoir de Harry le
  * Géant. Bornée à ce qui est jouable — on ne mise ni moins que zéro, ni plus
  * qu'il n'y a de cartes.
@@ -175,10 +169,16 @@ export function miseEffective(
   options: OptionsPartie,
 ): number {
   const annoncee = entree.mise ?? 0
-  if (!options.harryActif) return annoncee
+  if (!options.pouvoirsPirates) return annoncee
   return Math.min(cartes, Math.max(0, annoncee + entree.harry))
 }
 
+/**
+ * Score d'un joueur pour une manche.
+ *
+ * @param cartes    cartes distribuées cette manche, plafond déjà appliqué
+ * @param alliances alliances Butin réussies par ce joueur
+ */
 export function scorerEntree(
   entree: Entree,
   cartes: number,
@@ -196,7 +196,7 @@ export function scorerEntree(
   // Le pari du Flambeur se règle en points fixes, hors de tout multiplicateur.
   // Le pari nul est écarté d'emblée : le nier produirait -0, qui s'afficherait « -0 ».
   const flambeur =
-    options.flambeurActif && entree.flambeur !== 0
+    options.pouvoirsPirates && entree.flambeur !== 0
       ? exacte
         ? entree.flambeur
         : -entree.flambeur

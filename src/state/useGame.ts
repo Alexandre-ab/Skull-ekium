@@ -340,20 +340,28 @@ function reducer(etat: EtatJeu, action: Action): EtatJeu {
  * Elles portent un unique `extensions: boolean` : tout ou rien, ce qui
  * correspond aux trois cartes activées ensemble.
  */
-function migrerOptions(
-  options: Partial<OptionsPartie> & { extensions?: boolean },
+export function migrerOptions(
+  options: Partial<OptionsPartie> & {
+    extensions?: boolean
+    flambeurActif?: boolean
+    harryActif?: boolean
+  },
 ): OptionsPartie {
   // Les toutes premières sauvegardes portaient un unique « extensions » :
   // tout ou rien, ce qui correspond aux trois cartes activées ensemble.
   const toutes = options.extensions === true
+
   return {
     bonusSiMiseExacte: options.bonusSiMiseExacte ?? false,
     bouletActif: options.bouletActif ?? false,
     butin: options.butin ?? toutes,
     kraken: options.kraken ?? toutes,
     baleineBlanche: options.baleineBlanche ?? toutes,
-    flambeurActif: options.flambeurActif ?? false,
-    harryActif: options.harryActif ?? false,
+    // Les pouvoirs se réglaient un temps pirate par pirate : l'un ou l'autre
+    // d'actif signifiait que la table jouait la règle avancée.
+    pouvoirsPirates:
+      options.pouvoirsPirates ??
+      (options.flambeurActif === true || options.harryActif === true),
   }
 }
 
@@ -361,7 +369,7 @@ function migrerOptions(
  * Rattrape les manches antérieures à la déclaration des plis dévorés.
  * Elles n'en comptent aucun : leurs totaux restent ceux qui ont été validés.
  */
-function migrerManche(manche: Manche): Manche {
+export function migrerManche(manche: Manche): Manche {
   return {
     ...manche,
     plisDetruits: manche.plisDetruits ?? 0,

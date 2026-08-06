@@ -82,7 +82,8 @@ type Entree = {
   piratesCaptures: number;   // 0–6 : pirates pris par le Skull King
   skullKingCapture: boolean; // Skull King pris par votre sirène
   boulet: boolean;           // Rascal : boulet de canon (sinon chevrotine)
-  flambeur: 0 | 10 | 20;     // pouvoir Rascal le Flambeur
+  flambeur: 0 | 10 | 20;     // pari de Rascal le Flambeur
+  harry: -1 | 0 | 1;         // ajustement de mise de Harry le Géant
 };
 
 type Partie = {
@@ -94,7 +95,7 @@ type Partie = {
     butin: boolean;              // 2 cartes — alliances
     kraken: boolean;             // 1 carte — le pli est détruit
     baleineBlanche: boolean;     // 1 carte — pouvoirs annulés
-    flambeurActif: boolean;
+    pouvoirsPirates: boolean;    // règle avancée : Flambeur + Harry
   };
   calendrier: number[];        // cartes par manche, ex. [1,2,3,4,5,6,7,8,9,10]
   mancheCourante: number;

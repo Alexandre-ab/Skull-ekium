@@ -50,8 +50,7 @@ function options(champs: Partial<OptionsPartie> = {}): OptionsPartie {
     butin: false,
     kraken: false,
     baleineBlanche: false,
-    flambeurActif: false,
-    harryActif: false,
+    pouvoirsPirates: false,
     ...champs,
   }
 }
@@ -365,41 +364,41 @@ describe("alliance Butin", () => {
 /* ═══════════ Rascal le Flambeur ═══════════ */
 
 describe("Rascal le Flambeur", () => {
-  const flambeurActif = options({ flambeurActif: true })
+  const pouvoirsPirates = options({ pouvoirsPirates: true })
 
   it("un pari de 20 avec une mise ratée coûte 20", () => {
     const e = entree({ mise: 2, plis: 4, flambeur: 20 })
-    const score = scorerEntree(e, 10, 0, "skullking", flambeurActif)
+    const score = scorerEntree(e, 10, 0, "skullking", pouvoirsPirates)
     expect(score.flambeur).toBe(-20)
     expect(score.total).toBe(-40) // -20 de mise, -20 de pari
   })
 
   it("un pari de 20 avec une mise tenue rapporte 20", () => {
     const e = entree({ mise: 2, plis: 2, flambeur: 20 })
-    const score = scorerEntree(e, 10, 0, "skullking", flambeurActif)
+    const score = scorerEntree(e, 10, 0, "skullking", pouvoirsPirates)
     expect(score.flambeur).toBe(20)
     expect(score.total).toBe(60) // 40 de mise, 20 de pari
   })
 
   it("un pari de 10 suit la même règle", () => {
     expect(
-      scorerEntree(entree({ mise: 1, plis: 1, flambeur: 10 }), 5, 0, "skullking", flambeurActif)
+      scorerEntree(entree({ mise: 1, plis: 1, flambeur: 10 }), 5, 0, "skullking", pouvoirsPirates)
         .flambeur,
     ).toBe(10)
     expect(
-      scorerEntree(entree({ mise: 1, plis: 2, flambeur: 10 }), 5, 0, "skullking", flambeurActif)
+      scorerEntree(entree({ mise: 1, plis: 2, flambeur: 10 }), 5, 0, "skullking", pouvoirsPirates)
         .flambeur,
     ).toBe(-10)
   })
 
   it("un pari de 0 ne change rien", () => {
     const e = entree({ mise: 2, plis: 4, flambeur: 0 })
-    expect(scorerEntree(e, 10, 0, "skullking", flambeurActif).flambeur).toBe(0)
+    expect(scorerEntree(e, 10, 0, "skullking", pouvoirsPirates).flambeur).toBe(0)
   })
 
   it("est ignoré si l'option est désactivée", () => {
     const e = entree({ mise: 2, plis: 4, flambeur: 20 })
-    const score = scorerEntree(e, 10, 0, "skullking", options({ flambeurActif: false }))
+    const score = scorerEntree(e, 10, 0, "skullking", options({ pouvoirsPirates: false }))
     expect(score.flambeur).toBe(0)
     expect(score.total).toBe(-20)
   })
@@ -407,7 +406,7 @@ describe("Rascal le Flambeur", () => {
   it("n'est pas soumis au multiplicateur Rascal", () => {
     // Frappe à revers : la base est réduite de moitié, pas le pari.
     const e = entree({ mise: 1, plis: 2, flambeur: 20 })
-    const score = scorerEntree(e, 4, 0, "rascal", flambeurActif)
+    const score = scorerEntree(e, 4, 0, "rascal", pouvoirsPirates)
     expect(score.base).toBe(20)
     expect(score.flambeur).toBe(-20)
     expect(score.total).toBe(0)
@@ -415,7 +414,7 @@ describe("Rascal le Flambeur", () => {
 
   it("n'est pas soumis au tout ou rien du boulet", () => {
     const e = entree({ mise: 3, plis: 3, boulet: true, flambeur: 20 })
-    const opts = options({ flambeurActif: true, bouletActif: true })
+    const opts = options({ pouvoirsPirates: true, bouletActif: true })
     expect(scorerEntree(e, 6, 0, "rascal", opts).total).toBe(110) // 90 + 20
   })
 })
@@ -425,7 +424,7 @@ describe("Rascal le Flambeur", () => {
 describe("décomposition du score", () => {
   it("expose base, bonus, flambeur et leur somme", () => {
     const e = entree({ mise: 2, plis: 2, quatorzeNoir: true, flambeur: 10 })
-    const score = scorerEntree(e, 5, 0, "skullking", options({ flambeurActif: true }))
+    const score = scorerEntree(e, 5, 0, "skullking", options({ pouvoirsPirates: true }))
     expect(score).toEqual({
       base: 40,
       bonus: 20,
@@ -704,7 +703,7 @@ describe("trajectoires", () => {
 /* ═══════════ Pouvoir de Harry le Géant ═══════════ */
 
 describe("Harry le Géant", () => {
-  const harry = options({ harryActif: true })
+  const harry = options({ pouvoirsPirates: true })
 
   it("rend la mise annoncée quand l'option est inactive", () => {
     const e = entree({ mise: 2, harry: 1 })
@@ -749,7 +748,7 @@ describe("Harry le Géant", () => {
   })
 
   it("décide du sort du pari du Flambeur", () => {
-    const opts = options({ harryActif: true, flambeurActif: true })
+    const opts = options({ pouvoirsPirates: true })
     const rattrapee = entree({ mise: 2, plis: 3, harry: 1, flambeur: 20 })
     // Mise tenue grâce à Harry : le pari est gagné, pas perdu.
     expect(scorerEntree(rattrapee, 5, 0, "skullking", opts).flambeur).toBe(20)

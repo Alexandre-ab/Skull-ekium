@@ -72,10 +72,15 @@ export type OptionsPartie = {
    * l'emporte. Sans carte numérotée dans le pli, celui-ci est détruit.
    */
   baleineBlanche: boolean
-  /** Autorise le pari du pouvoir Rascal le Flambeur. */
-  flambeurActif: boolean
-  /** Autorise l'ajustement de mise du pouvoir Harry le Géant. */
-  harryActif: boolean
+  /**
+   * Règle avancée « Pouvoirs des pirates ».
+   *
+   * Les cinq pirates sont dans le paquet de base : on ne les ajoute pas, on
+   * débloque leurs pouvoirs. Seuls deux touchent au score — le pari de Rascal
+   * le Flambeur et l'ajustement de mise de Harry le Géant. Les trois autres
+   * changent le déroulement du jeu, pas le décompte.
+   */
+  pouvoirsPirates: boolean
 }
 
 /** État complet d'une partie. */

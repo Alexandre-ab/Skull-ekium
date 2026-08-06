@@ -119,7 +119,7 @@ export function EcranBonus({ jeu }: { jeu: Jeu }) {
                   stade les plis sont connus, parier ne coûterait plus rien.
                   Rappelé en lecture seule pour que le récapitulatif se comprenne.
                 */}
-                {options.flambeurActif && entree.flambeur !== 0 && (
+                {options.pouvoirsPirates && entree.flambeur !== 0 && (
                   <p className="text-xs text-brume">
                     Pari du Flambeur : {entree.flambeur} points, posé à la mise.
                   </p>

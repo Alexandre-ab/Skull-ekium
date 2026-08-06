@@ -9,7 +9,7 @@ export function EcranMises({ jeu }: { jeu: Jeu }) {
   if (!partie) return null
 
   const { entrees } = partie.brouillon
-  const { flambeurActif } = partie.options
+  const { pouvoirsPirates } = partie.options
   const sommeMises = entrees.reduce((total, e) => total + (e.mise ?? 0), 0)
   const toutesSaisies = entrees.every((e) => e.mise !== null)
 
@@ -28,7 +28,7 @@ export function EcranMises({ jeu }: { jeu: Jeu }) {
         etiquette={(nom) => `Mise de ${nom}`}
         resume={(i) => (entrees[i]?.mise === null ? "à miser" : `misé ${entrees[i]?.mise}`)}
         complement={
-          flambeurActif
+          pouvoirsPirates
             ? (i) => (
                 /*
                   Le pari se pose ici, avec la mise, et non à l'étape Bonus :
