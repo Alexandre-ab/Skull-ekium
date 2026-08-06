@@ -25,20 +25,39 @@ Français partout : interface, commentaires, noms de variables métier
 
 ```
 src/
-  engine/
-    types.ts            types du domaine
-    scoring.ts          fonctions PURES de calcul
-    rules.ts            constantes de règles, formats de manches
-    __tests__/scoring.test.ts
-  state/
-    useGame.ts          reducer + persistance localStorage
-  components/
-  App.tsx
+  engine/                   fonctions PURES — ni React, ni DOM, ni localStorage
+    types.ts                types du domaine
+    rules.ts                constantes de règles, formats, calendriers
+    scoring.ts              score, cohérence des plis, trajectoires
+    palmares.ts             agrégation des parties archivées
+    __tests__/              scoring.test.ts · palmares.test.ts
+  state/                    orchestration de la saisie et de la persistance
+    useGame.ts              reducer + sauvegarde de la partie en cours
+    usePalmares.ts          équipage enregistré + journal des parties
+  components/               affichage seul
+    SaisieJoueurs.tsx       accordéon partagé par Mises et Plis
+    CarteTraversee.tsx      la feuille de score, en graphique
+    Sillage.tsx             historique d'un joueur, au palmarès
+    …                       un fichier par écran, plus Modale et Pastilles
+  App.tsx                   assemblage des écrans
 ```
 
 **`engine/` ne connaît ni React, ni le DOM, ni `localStorage`.**
 Uniquement des fonctions pures : un état entre, un score sort.
 Toute logique de calcul vit là et nulle part ailleurs.
+
+Trois clés `localStorage`, volontairement séparées — effacer une partie ne
+doit jamais emporter le palmarès :
+
+| Clé | Contenu | Écrite quand |
+|---|---|---|
+| `skullking:partie` | la partie en cours | à chaque saisie |
+| `skullking:equipage` | jusqu'à 30 noms, le plus récent en tête | au lancement d'une partie |
+| `skullking:palmares` | jusqu'à 200 parties terminées | à la fin d'une partie complète |
+
+Les sauvegardes anciennes sont migrées au chargement plutôt que rejetées :
+une partie en cours sur un téléphone ne doit jamais être perdue par une mise
+à jour. Voir `migrerOptions` et `migrerManche` dans `useGame.ts`.
 
 ---
 
@@ -275,16 +294,54 @@ Points à ne pas rater :
 
 ## Ordre de travail
 
-1. `types.ts` + `rules.ts`
-2. `scoring.test.ts` — tous les cas ci-dessus, ils échouent
-3. `scoring.ts` — jusqu'à ce que les tests passent
-4. `useGame.ts` — reducer et persistance
-5. Interface, écran par écran
-6. Configuration PWA et icônes
-7. Vérification : Lighthouse en mode PWA, puis test réel en mode avion
+Pour toute évolution du moteur, l'ordre reste le même : `types.ts` et
+`rules.ts` d'abord, les tests ensuite, le calcul en dernier. Les constantes
+chiffrées vivent dans `rules.ts` et nulle part ailleurs.
 
-À la fin, `npm run build` doit passer sans erreur TypeScript et
-`npm run test` sans échec.
+## Vérification
+
+```sh
+npm run test    # moteur de score — doit passer sans échec
+npm run build   # tsc strict puis build de production — sans erreur
+```
+
+Le moteur est testé, l'interface non. Toute modification d'écran demande donc
+un passage réel dans le navigateur : une erreur de câblage passe le
+compilateur sans se voir.
+
+### Audit Lighthouse
+
+```sh
+npx lighthouse@latest https://skull-self.vercel.app \
+  --output=json --output-path=./lh.json \
+  --chrome-flags="--headless=new" --quiet
+```
+
+Auditer l'URL de production, pas le serveur de développement : c'est ce build
+qui tourne sur le téléphone, avec son HTTPS et son service worker réels.
+
+**La catégorie « PWA » de Lighthouse n'existe plus**, supprimée en version 12.
+Les audits `installable-manifest`, `service-worker`, `maskable-icon` et
+`splash-screen` ont disparu avec elle. L'installabilité se vérifie donc à la
+main — chaque point ci-dessous doit répondre en production :
+
+| À vérifier | Attendu |
+|---|---|
+| `/manifest.webmanifest` | 200, `application/manifest+json` |
+| `/sw.js` | 200, `Cache-Control: max-age=0, must-revalidate` |
+| `/icon-192.png`, `/icon-512.png`, `/icon-512-maskable.png` | 200 |
+| `/apple-touch-icon.png` | 200, et référencé dans le `<head>` |
+| `/fonts/*.woff2` | 200 — sinon l'appli s'affiche nue en mode avion |
+| Protocole | HTTPS |
+
+Un `Cache-Control` long sur `sw.js` empêcherait toute mise à jour d'atteindre
+les téléphones : c'est le piège principal, et `vercel.json` s'en charge.
+
+### Test en mode avion
+
+Le seul contrôle qu'aucun outil ne remplace. Appli installée sur l'écran
+d'accueil, réseau coupé, une partie complète jouée. Il valide d'un coup le
+précache, les polices auto-hébergées et la persistance `localStorage`.
 
 ---
 
