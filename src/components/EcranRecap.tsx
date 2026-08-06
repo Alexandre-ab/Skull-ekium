@@ -1,5 +1,7 @@
 /** Étape 4 — récapitulatif de la manche avant validation. */
 
+import { miseEffective } from "../engine/scoring"
+import type { Entree } from "../engine/types"
 import type { Jeu } from "../state/useGame"
 
 export function EcranRecap({ jeu }: { jeu: Jeu }) {
@@ -7,6 +9,7 @@ export function EcranRecap({ jeu }: { jeu: Jeu }) {
   if (!partie) return null
 
   const { entrees } = partie.brouillon
+  const defendue = (entree: Entree) => miseEffective(entree, cartes, partie.options)
 
   return (
     <div className="px-3 pb-4">
@@ -46,8 +49,14 @@ export function EcranRecap({ jeu }: { jeu: Jeu }) {
                   <th scope="row" className="max-w-28 truncate p-2 text-left font-normal text-ecume">
                     {nom}
                   </th>
+                  {/* La mise ajustée par Harry s'ajoute à l'annonce, elle ne
+                      l'efface pas : le journal doit garder ce qui a été dit. */}
                   <td className="p-2 text-center chiffres text-brume">
-                    {entree.mise ?? "—"} / {entree.plis ?? "—"}
+                    {entree.mise ?? "—"}
+                    {defendue(entree) !== (entree.mise ?? 0) && (
+                      <span className="text-or">→{defendue(entree)}</span>
+                    )}{" "}
+                    / {entree.plis ?? "—"}
                   </td>
                   <td
                     className={[

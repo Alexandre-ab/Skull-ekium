@@ -4,6 +4,7 @@ import {
   bonusBrut,
   cartesDeLaManche,
   cartesMaximum,
+  miseEffective,
   compterAlliancesReussies,
   plisADistribuer,
   scorerEntree,
@@ -37,6 +38,7 @@ function entree(champs: Partial<Entree> = {}): Entree {
     skullKingCapture: false,
     boulet: false,
     flambeur: 0,
+    harry: 0,
     ...champs,
   }
 }
@@ -49,6 +51,7 @@ function options(champs: Partial<OptionsPartie> = {}): OptionsPartie {
     kraken: false,
     baleineBlanche: false,
     flambeurActif: false,
+    harryActif: false,
     ...champs,
   }
 }
@@ -695,5 +698,60 @@ describe("trajectoires", () => {
     const courbes = trajectoires(m, 3, "skullking", options())
     const finaux = totaux(m, 3, "skullking", options())
     expect(courbes.map((c) => c[c.length - 1])).toEqual(finaux)
+  })
+})
+
+/* ═══════════ Pouvoir de Harry le Géant ═══════════ */
+
+describe("Harry le Géant", () => {
+  const harry = options({ harryActif: true })
+
+  it("rend la mise annoncée quand l'option est inactive", () => {
+    const e = entree({ mise: 2, harry: 1 })
+    expect(miseEffective(e, 5, options())).toBe(2)
+  })
+
+  it("ajoute ou retire un pli à la mise", () => {
+    expect(miseEffective(entree({ mise: 2, harry: 1 }), 5, harry)).toBe(3)
+    expect(miseEffective(entree({ mise: 2, harry: -1 }), 5, harry)).toBe(1)
+    expect(miseEffective(entree({ mise: 2, harry: 0 }), 5, harry)).toBe(2)
+  })
+
+  it("ne descend jamais sous zéro ni au-dessus des cartes en jeu", () => {
+    expect(miseEffective(entree({ mise: 0, harry: -1 }), 5, harry)).toBe(0)
+    expect(miseEffective(entree({ mise: 5, harry: 1 }), 5, harry)).toBe(5)
+  })
+
+  it("rattrape une mise ratée d'un pli", () => {
+    // Mise 2 pour 3 plis pris : ratée à −10. Ajustée à 3, elle est tenue.
+    const ratee = entree({ mise: 2, plis: 3 })
+    expect(total(ratee, 5, "skullking", harry)).toBe(-10)
+
+    const rattrapee = entree({ mise: 2, plis: 3, harry: 1 })
+    expect(total(rattrapee, 5, "skullking", harry)).toBe(60)
+  })
+
+  it("peut aussi faire rater une mise tenue", () => {
+    const tenue = entree({ mise: 2, plis: 2, harry: 1 })
+    expect(total(tenue, 5, "skullking", harry)).toBe(-10)
+  })
+
+  it("bascule la mise à zéro vers sa formule à part", () => {
+    // Mise 1 pour 0 pli : ratée. Ajustée à 0, c'est 10 points par carte.
+    const e = entree({ mise: 1, plis: 0, harry: -1 })
+    expect(total(e, 7, "skullking", harry)).toBe(70)
+  })
+
+  it("s'applique aussi au système Rascal", () => {
+    // Écart de 1 sur 4 cartes vaut 20 ; ramené à zéro, il vaut 40.
+    const e = entree({ mise: 1, plis: 2, harry: 1 })
+    expect(total(e, 4, "rascal", harry)).toBe(40)
+  })
+
+  it("décide du sort du pari du Flambeur", () => {
+    const opts = options({ harryActif: true, flambeurActif: true })
+    const rattrapee = entree({ mise: 2, plis: 3, harry: 1, flambeur: 20 })
+    // Mise tenue grâce à Harry : le pari est gagné, pas perdu.
+    expect(scorerEntree(rattrapee, 5, 0, "skullking", opts).flambeur).toBe(20)
   })
 })

@@ -156,10 +156,27 @@ Deux conditions à respecter précisément :
 2. **L'alliance Butin fait exception** : les 20 points ne sont accordés que si
    **les deux** alliés réussissent leur mise. Toujours, quelle que soit l'option.
 
-### Rascal le Flambeur
+### Pouvoirs de pirates
 
-Pari de 0, 10 ou 20 points, posé au moment de la mise :
-`+pari` si la mise est exacte, `−pari` sinon. Non soumis au multiplicateur Rascal.
+La règle en compte cinq. Trois — Rosie la Douce, Will le Bandit, Juanita Jade —
+changent le déroulement du jeu, jamais le décompte : l'appli les ignore. Les
+deux autres touchent au score.
+
+**Rascal le Flambeur.** Pari de 0, 10 ou 20 points, posé **au moment de la
+mise** : `+pari` si la mise est exacte, `−pari` sinon. Non soumis au
+multiplicateur Rascal.
+
+**Harry le Géant.** Ajuste sa mise de `+1`, `−1` ou la laisse telle quelle.
+La règle en fait **le seul pirate dont le pouvoir s'emploie après le dernier
+pli** : il connaît son résultat avant de corriger son annonce. L'ajustement se
+saisit donc à l'étape Plis, à l'exact opposé du Flambeur. Il est borné à ce
+qui est jouable, entre 0 et le nombre de cartes.
+
+Le score se calcule sur la mise ainsi ajustée (`miseEffective`), mais
+l'annonce d'origine reste affichée : le journal garde ce qui a été dit.
+
+Ni l'un ni l'autre ne se débloque sans avoir remporté un pli avec le pirate
+concerné — l'appli ne peut pas le savoir et fait confiance à la table.
 
 ### Formats de manches
 

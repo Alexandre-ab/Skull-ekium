@@ -164,6 +164,21 @@ export function compterAlliancesReussies(manche: Manche, joueur: number): number
  * @param cartes    cartes distribuées cette manche, plafond déjà appliqué
  * @param alliances alliances Butin réussies par ce joueur
  */
+/**
+ * Mise réellement défendue : celle annoncée, ajustée du pouvoir de Harry le
+ * Géant. Bornée à ce qui est jouable — on ne mise ni moins que zéro, ni plus
+ * qu'il n'y a de cartes.
+ */
+export function miseEffective(
+  entree: Entree,
+  cartes: number,
+  options: OptionsPartie,
+): number {
+  const annoncee = entree.mise ?? 0
+  if (!options.harryActif) return annoncee
+  return Math.min(cartes, Math.max(0, annoncee + entree.harry))
+}
+
 export function scorerEntree(
   entree: Entree,
   cartes: number,
@@ -171,7 +186,7 @@ export function scorerEntree(
   systeme: Systeme,
   options: OptionsPartie,
 ): ScoreEntree {
-  const mise = entree.mise ?? 0
+  const mise = miseEffective(entree, cartes, options)
   const plis = entree.plis ?? 0
   const ecart = Math.abs(mise - plis)
   const exacte = ecart === 0

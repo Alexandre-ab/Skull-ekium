@@ -2,7 +2,7 @@
 
 import { Pastilles } from "./Pastilles"
 import { SaisieJoueurs } from "./SaisieJoueurs"
-import { plisADistribuer } from "../engine/scoring"
+import { miseEffective, plisADistribuer } from "../engine/scoring"
 import type { Jeu } from "../state/useGame"
 
 export function EcranPlis({ jeu }: { jeu: Jeu }) {
@@ -10,7 +10,7 @@ export function EcranPlis({ jeu }: { jeu: Jeu }) {
   if (!partie) return null
 
   const { entrees, plisDetruits } = partie.brouillon
-  const { kraken, baleineBlanche } = partie.options
+  const { kraken, baleineBlanche, harryActif } = partie.options
 
   // Les deux bêtes ne dévorent qu'un pli chacune, et jamais plus qu'il n'y a
   // de cartes : au-delà, le choix proposé n'aurait aucun sens.
@@ -60,13 +60,23 @@ export function EcranPlis({ jeu }: { jeu: Jeu }) {
         onChoisir={(i, v) => jeu.definirPlis(i, v)}
         etiquette={(nom) => `Plis de ${nom}`}
         ton="cordage"
+        complement={
+          harryActif
+            ? (i) => <AjustementHarry jeu={jeu} joueur={i} />
+            : undefined
+        }
         resume={(i) => {
           const entree = entrees[i]
           const score = scoresBrouillon[i]
           const saisi = entree?.plis !== null && entree?.plis !== undefined
+          const annoncee = entree?.mise ?? 0
+          const defendue = entree
+            ? miseEffective(entree, cartes, partie.options)
+            : annoncee
           return (
             <>
-              misé {entree?.mise ?? 0}
+              misé {annoncee}
+              {defendue !== annoncee && <> → {defendue}</>}
               {saisi && score && (
                 <span
                   className={[
@@ -116,6 +126,70 @@ export function EcranPlis({ jeu }: { jeu: Jeu }) {
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+/* ═══════════ Pouvoir de Harry le Géant ═══════════ */
+
+/**
+ * Ajustement de la mise de ±1, proposé une fois les plis connus.
+ *
+ * C'est l'inverse du pari du Flambeur, qui se pose avant de jouer : la règle
+ * fait de Harry le seul pirate dont le pouvoir s'emploie après le dernier pli.
+ * Voir son résultat avant de corriger son annonce, c'est tout le pouvoir.
+ */
+function AjustementHarry({ jeu, joueur }: { jeu: Jeu; joueur: number }) {
+  const { partie, cartes } = jeu
+  const entree = partie?.brouillon.entrees[joueur]
+  if (!partie || !entree) return null
+
+  const annoncee = entree.mise ?? 0
+  const defendue = miseEffective(entree, cartes, partie.options)
+
+  const choix = [
+    { valeur: -1 as const, libelle: "−1" },
+    { valeur: 0 as const, libelle: "inchangée" },
+    { valeur: 1 as const, libelle: "+1" },
+  ]
+
+  return (
+    <div className="mt-3 border-t border-pont pt-3">
+      <div className="mb-1.5 flex items-baseline justify-between gap-2">
+        <span className="text-xs text-ecume">Harry le Géant</span>
+        <span className="text-xs text-brume">
+          mise {annoncee}
+          {defendue !== annoncee && <> → <span className="text-or">{defendue}</span></>}
+        </span>
+      </div>
+      <div className="flex gap-1.5">
+        {choix.map(({ valeur, libelle }) => {
+          // Une mise ne descend pas sous zéro ni au-delà des cartes en jeu :
+          // proposer l'ajustement impossible ne ferait qu'égarer.
+          const cible = annoncee + valeur
+          const jouable = cible >= 0 && cible <= cartes
+          const choisi = entree.harry === valeur
+          return (
+            <button
+              key={valeur}
+              type="button"
+              aria-pressed={choisi}
+              disabled={!jouable}
+              onClick={() => jeu.definirChamp(joueur, "harry", valeur)}
+              className={[
+                "min-h-11 flex-1 rounded-xl border text-sm",
+                "transition-transform active:scale-95 disabled:opacity-30",
+                choisi ? "pastille-or font-bold" : "carte text-brume",
+              ].join(" ")}
+            >
+              {libelle}
+            </button>
+          )
+        })}
+      </div>
+      <p className="mt-1.5 text-xs text-brume">
+        Utilisable après le dernier pli, une fois le résultat connu.
+      </p>
     </div>
   )
 }

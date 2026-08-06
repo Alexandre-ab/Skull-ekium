@@ -27,6 +27,12 @@ export type Entree = {
   boulet: boolean
   /** Pari du pouvoir Rascal le Flambeur. */
   flambeur: 0 | 10 | 20
+  /**
+   * Ajustement de la mise par le pouvoir de Harry le Géant.
+   * Harry est le seul pirate dont le pouvoir s'emploie après le dernier pli :
+   * il voit son résultat avant de corriger son annonce.
+   */
+  harry: -1 | 0 | 1
 }
 
 /** Paire d'indices de joueurs alliés par une carte Butin. */
@@ -68,6 +74,8 @@ export type OptionsPartie = {
   baleineBlanche: boolean
   /** Autorise le pari du pouvoir Rascal le Flambeur. */
   flambeurActif: boolean
+  /** Autorise l'ajustement de mise du pouvoir Harry le Géant. */
+  harryActif: boolean
 }
 
 /** État complet d'une partie. */

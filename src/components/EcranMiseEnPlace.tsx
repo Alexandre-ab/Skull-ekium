@@ -36,6 +36,7 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
     kraken: false,
     baleineBlanche: false,
     flambeurActif: false,
+    harryActif: false,
   })
 
   // La longueur du format sert de valeur de départ ; `null` tant que le joueur
@@ -310,6 +311,11 @@ export function EcranMiseEnPlace({ onDemarrer, equipage, onPalmares }: Props) {
                 "Variante ancienne édition : mise ratée, bonus perdus",
               ],
               ["flambeurActif", "Rascal le Flambeur", "Pari de 0, 10 ou 20 points"],
+              [
+                "harryActif",
+                "Harry le Géant",
+                "Ajuste sa mise de ±1, après le dernier pli",
+              ],
               ...(systeme === "rascal"
                 ? ([["bouletActif", "Boulet de canon", "Rascal : 15 points par carte, tout ou rien"]] as const)
                 : []),

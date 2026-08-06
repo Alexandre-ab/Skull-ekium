@@ -76,33 +76,33 @@ export function EcranBonus({ jeu }: { jeu: Jeu }) {
                   detail={`${BONUS_QUATORZE_COULEUR} points chacune`}
                   valeur={entree.quatorzeCouleur}
                   max={MAX_QUATORZE_COULEUR}
-                  onChanger={(v) => jeu.definirBonus(i, "quatorzeCouleur", v)}
+                  onChanger={(v) => jeu.definirChamp(i, "quatorzeCouleur", v)}
                 />
                 <InterrupteurBonus
                   etiquette="Carte 14 noire"
                   detail={`${BONUS_QUATORZE_NOIR} points`}
                   actif={entree.quatorzeNoir}
-                  onChanger={(v) => jeu.definirBonus(i, "quatorzeNoir", v)}
+                  onChanger={(v) => jeu.definirChamp(i, "quatorzeNoir", v)}
                 />
                 <CompteurBonus
                   etiquette="Sirènes capturées"
                   detail={`${BONUS_SIRENE_CAPTUREE} points chacune, par un pirate`}
                   valeur={entree.sirenesCapturees}
                   max={MAX_SIRENES_CAPTUREES}
-                  onChanger={(v) => jeu.definirBonus(i, "sirenesCapturees", v)}
+                  onChanger={(v) => jeu.definirChamp(i, "sirenesCapturees", v)}
                 />
                 <CompteurBonus
                   etiquette="Pirates capturés"
                   detail={`${BONUS_PIRATE_CAPTURE} points chacun, par le Skull King`}
                   valeur={entree.piratesCaptures}
                   max={MAX_PIRATES_CAPTURES}
-                  onChanger={(v) => jeu.definirBonus(i, "piratesCaptures", v)}
+                  onChanger={(v) => jeu.definirChamp(i, "piratesCaptures", v)}
                 />
                 <InterrupteurBonus
                   etiquette="Skull King capturé"
                   detail={`${BONUS_SKULL_KING_CAPTURE} points, par votre sirène`}
                   actif={entree.skullKingCapture}
-                  onChanger={(v) => jeu.definirBonus(i, "skullKingCapture", v)}
+                  onChanger={(v) => jeu.definirChamp(i, "skullKingCapture", v)}
                 />
 
                 {systeme === "rascal" && options.bouletActif && (
@@ -110,7 +110,7 @@ export function EcranBonus({ jeu }: { jeu: Jeu }) {
                     etiquette="Boulet de canon"
                     detail="15 points par carte, tout ou rien"
                     actif={entree.boulet}
-                    onChanger={(v) => jeu.definirBonus(i, "boulet", v)}
+                    onChanger={(v) => jeu.definirChamp(i, "boulet", v)}
                   />
                 )}
 

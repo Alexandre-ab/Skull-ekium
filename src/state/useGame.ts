@@ -38,8 +38,8 @@ export const PHASES: readonly { id: Phase; libelle: string }[] = [
   { id: "recap", libelle: "Récap" },
 ]
 
-/** Champs de bonus saisissables par joueur. */
-export type ChampBonus =
+/** Champs d'une entrée modifiables depuis l'interface. */
+export type ChampEntree =
   | "quatorzeCouleur"
   | "quatorzeNoir"
   | "sirenesCapturees"
@@ -47,6 +47,7 @@ export type ChampBonus =
   | "skullKingCapture"
   | "boulet"
   | "flambeur"
+  | "harry"
 
 export type ConfigNouvellePartie = {
   joueurs: string[]
@@ -67,7 +68,7 @@ type Action =
   | { type: "mise"; joueur: number; valeur: number | null }
   | { type: "plis"; joueur: number; valeur: number | null }
   | { type: "plisDetruits"; valeur: number }
-  | { type: "bonus"; joueur: number; champ: ChampBonus; valeur: number | boolean }
+  | { type: "bonus"; joueur: number; champ: ChampEntree; valeur: number | boolean }
   | { type: "allianceAjouter"; paire: Alliance }
   | { type: "allianceRetirer"; index: number }
   | { type: "phase"; phase: Phase }
@@ -90,6 +91,7 @@ export function entreeVierge(): Entree {
     skullKingCapture: false,
     boulet: false,
     flambeur: 0,
+    harry: 0,
   }
 }
 
@@ -338,14 +340,20 @@ function reducer(etat: EtatJeu, action: Action): EtatJeu {
  * Elles portent un unique `extensions: boolean` : tout ou rien, ce qui
  * correspond aux trois cartes activées ensemble.
  */
-function migrerOptions(options: OptionsPartie & { extensions?: boolean }): OptionsPartie {
-  if (options.butin !== undefined) return options
+function migrerOptions(
+  options: Partial<OptionsPartie> & { extensions?: boolean },
+): OptionsPartie {
+  // Les toutes premières sauvegardes portaient un unique « extensions » :
+  // tout ou rien, ce qui correspond aux trois cartes activées ensemble.
   const toutes = options.extensions === true
   return {
-    ...options,
-    butin: toutes,
-    kraken: toutes,
-    baleineBlanche: toutes,
+    bonusSiMiseExacte: options.bonusSiMiseExacte ?? false,
+    bouletActif: options.bouletActif ?? false,
+    butin: options.butin ?? toutes,
+    kraken: options.kraken ?? toutes,
+    baleineBlanche: options.baleineBlanche ?? toutes,
+    flambeurActif: options.flambeurActif ?? false,
+    harryActif: options.harryActif ?? false,
   }
 }
 
@@ -354,7 +362,11 @@ function migrerOptions(options: OptionsPartie & { extensions?: boolean }): Optio
  * Elles n'en comptent aucun : leurs totaux restent ceux qui ont été validés.
  */
 function migrerManche(manche: Manche): Manche {
-  return manche.plisDetruits === undefined ? { ...manche, plisDetruits: 0 } : manche
+  return {
+    ...manche,
+    plisDetruits: manche.plisDetruits ?? 0,
+    entrees: manche.entrees.map((e) => ({ ...e, harry: e.harry ?? 0 })),
+  }
 }
 
 function chargerEtat(): EtatJeu {
@@ -450,7 +462,7 @@ export function useGame() {
       definirPlis: (joueur: number, valeur: number | null) =>
         envoyer({ type: "plis", joueur, valeur }),
       definirPlisDetruits: (valeur: number) => envoyer({ type: "plisDetruits", valeur }),
-      definirBonus: (joueur: number, champ: ChampBonus, valeur: number | boolean) =>
+      definirChamp: (joueur: number, champ: ChampEntree, valeur: number | boolean) =>
         envoyer({ type: "bonus", joueur, champ, valeur }),
       ajouterAlliance: (paire: Alliance) => envoyer({ type: "allianceAjouter", paire }),
       retirerAlliance: (index: number) => envoyer({ type: "allianceRetirer", index }),
