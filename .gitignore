@@ -29,3 +29,6 @@ dist-ssr
 # Règle officielle Blackrock Games : 6,5 Mo sous droits, gardée hors du dépôt.
 # Elle sert de référence à la saisie des scores, pas de source à distribuer.
 skull_king_regles_fr.pdf
+
+# Réglages locaux de Claude Code, propres à chaque machine
+.claude/settings.local.json
